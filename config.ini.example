@@ -1,0 +1,9 @@
+[main]
+
+organization=org-xxxxxxxxxxxxxxxxxxx
+api_key=sk-yyyyyyyyyyyyyyyyyyyyyyyyyyy
+
+# 选择一个gpt模型
+model=gpt-3.5-turbo
+
+google_search_api_key=zzzzzzzzzzzzzzzzzzzzzzzzzzzz
