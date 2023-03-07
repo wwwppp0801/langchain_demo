@@ -80,7 +80,13 @@ Answer: ${{Answer}}
 Example:
 Question: What is 37593 * 67?
 ```python
-print(37593 * 67)
+def gcd(a, b):
+  if b == 0:
+    return a
+  else:
+    r = a % b
+    return gcd(b, r)
+print(37593*67//gcd(37593,67))
 ```
 ```output
 2518731
