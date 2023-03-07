@@ -3,6 +3,7 @@ import sys
 import time
 import datetime
 import langchain
+from typing import Any, Callable, List, NamedTuple, Optional, Sequence, Tuple
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.agents import Agent
@@ -13,6 +14,10 @@ from langchain import LLMMathChain, SerpAPIWrapper
 import openai
 import configparser
 
+
+from langchain.agents.self_ask_with_search.base import SelfAskWithSearchAgent
+
+
 openai.log="debug"
 
 # 创建一个ConfigParser对象
@@ -20,13 +25,18 @@ config = configparser.ConfigParser()
 
 # 读取一个INI文件
 config.read("config.ini")
+
+openai.organization=config.get("main", "organization")
+openai.api_key=config.get("main", "api_key")
+model_name=config.get("main", "model")
 google_search_api_key=config.get("main","google_search_api_key")
+wolframalpha_appid=config.get("main","wolframalpha_appid")
 
-os.environ["OPENAI_API_KEY"] = "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"
-os.environ["SERPAPI_API_KEY"] = google_search_api_key
-llm = OpenAI(model_name="gpt-3.5-turbo", temperature=0)
 
-search = SerpAPIWrapper()
+
+llm = OpenAI(model_name="gpt-3.5-turbo", temperature=0,openai_api_key=openai.api_key)
+
+search = SerpAPIWrapper(serpapi_api_key=google_search_api_key)
 tools = [
     Tool(
         name="Intermediate Answer",
@@ -35,7 +45,41 @@ tools = [
     )
 ]
 
-self_ask_with_search = initialize_agent(tools, llm, agent="self-ask-with-search", verbose=True)
+
+
+class MySelfAskWithSearchAgent(SelfAskWithSearchAgent):
+    """Agent for the MRKL chain."""
+    def _extract_tool_and_input(self, text: str) -> Optional[Tuple[str, str]]:
+        followup = "Follow up:"
+        last_line = text.strip(" ").strip("\n").split("\n")[-1]
+        print(f'text:{text}')
+        print(f'last_line:{last_line}')
+
+
+        if followup not in last_line:
+            finish_string = "So the final answer is: "
+            if finish_string not in last_line:
+                return None
+            return "Final Answer", last_line[len(finish_string) :]
+
+        after_colon = text.split(":")[-1]
+
+        if " " == after_colon[0]:
+            after_colon = after_colon[1:]
+
+        return "Intermediate Answer", after_colon
+
+
+from langchain.agents.loading import AGENT_TO_CLASS
+AGENT_TO_CLASS["my-self-ask-with-search"]=MySelfAskWithSearchAgent
+
+
+self_ask_with_search = initialize_agent(tools, llm, agent="my-self-ask-with-search", verbose=True)
+
+
+
+
+
 print(self_ask_with_search)
 
 self_ask_with_search.run("What is the hometown of the reigning men's U.S. Open champion?")
