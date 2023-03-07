@@ -1,3 +1,7 @@
+### 修改点：
+# 覆盖_extract_tool_and_input函数，修复了返回值多一个换行的问题
+
+
 import os
 import sys
 import time
