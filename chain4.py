@@ -55,7 +55,15 @@ from langchain.chains.question_answering import load_qa_chain
 
 from langchain.vectorstores import Chroma, Pinecone
 from langchain.embeddings.openai import OpenAIEmbeddings
-import pinecone
+#import pinecone
+
+
+from langchain.text_splitter import CharacterTextSplitter
+from langchain import VectorDBQA
+
+import magic
+import os
+import nltk
 
 
 
@@ -96,11 +104,19 @@ print (f'Now you have {len(texts)} documents')
 
 embeddings = OpenAIEmbeddings(openai_api_key=openai.api_key)
 
-pinecone.init(
-    api_key=PINECONE_API_KEY,  # find at app.pinecone.io
-    environment=PINECONE_API_ENV  # next to api key in console
-)
-index_name = "langchain2"
+#pinecone.init(
+#    api_key=PINECONE_API_KEY,  # find at app.pinecone.io
+#    environment=PINECONE_API_ENV  # next to api key in console
+#)
+#index_name = "langchain2"
+##### 还没申请PINECONE_API_KEY，晚点搞这个
 
 
-#### 还没申请PINECONE_API_KEY，晚点搞这个
+docsearch = Chroma.from_documents(texts, embeddings)
+qa = VectorDBQA.from_chain_type(llm=llm, chain_type="stuff", vectorstore=docsearch)
+
+
+query = "who is the author?"
+result = qa({"query": query})
+
+print(result)
