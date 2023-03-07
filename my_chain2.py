@@ -24,6 +24,23 @@ Observation: the result of the action
 ... (this Thought/Action/Action Input/Observation can repeat N times)
 Thought: I now know the final answer
 Final Answer: the final answer to the original input question"""
+
+PREFIX = """Answer the following questions as best you can. You have access to the following tools, no calculate result manually:"""
+#FORMAT_INSTRUCTIONS = """Use the following format:
+#
+#Question: the input question you must answer
+#Thought: you should always think about what to do
+#Action: the action to take, should be one of [{tool_names}]
+#Action Input: the input to the action
+#Observation: the result of the action
+#... (this Thought/Action/Action Input/Observation can repeat N times)
+#Thought: I now know the final answer
+#Final Answer: the final answer to the original input question"""
+#SUFFIX = """Begin!
+#
+#Question: {input}
+#Thought:{agent_scratchpad}"""
+
 	
 
 
@@ -124,8 +141,9 @@ from langchain.agents.load_tools import _LLM_TOOLS
 _LLM_TOOLS["my-llm-math"]= _get_my_llm_math
 tools = load_tools(["serpapi", "my-llm-math"], llm=llm)
 agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,
-	 agent_kwargs={"format_instructions":FORMAT_INSTRUCTIONS})
+                         agent_kwargs={"format_instructions":FORMAT_INSTRUCTIONS,"prefix":PREFIX})
 agent.run("Who is the current leader of Japan? What is the largest prime number that is smaller than their age")
+#agent.run(" What is the largest prime number that is smaller than 1293812746")
 
 
 
