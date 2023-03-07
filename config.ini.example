@@ -3,6 +3,9 @@
 organization=org-xxxxxxxxxxxxxxxxxxx
 api_key=sk-yyyyyyyyyyyyyyyyyyyyyyyyyyy
 
+# 访问wolframalpha
+wolframalpha_appid=hhhhhhhhhhhhhhhh
+
 # 选择一个gpt模型
 model=gpt-3.5-turbo
 

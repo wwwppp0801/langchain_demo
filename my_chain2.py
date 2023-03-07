@@ -1,9 +1,16 @@
 ### 修改点：
 # * 修改agent的主prompt：format_instructions，重复了一次格式，避免“Action 1:”，“Thought 1:”这样的回复
 # * 修改LLMMathChain的主prompt：强制生成python代码，避免语言模型自行推断
-# * 修改temperature 参数为1
+# * 修改temperature 参数为0
+# * 修改MyZeroShotAgent，解决多余的"字符
+# * 修改MyWolframAlphaQueryRun, 把它当成Calculator来用
+# * 修改MyLLMMathChain的prompt, 确保它会生成python代码
+
 
 import os
+import re
+from typing import Any, Callable, List, NamedTuple, Optional, Sequence, Tuple
+
 import openai
 openai.log="debug"
 
@@ -41,7 +48,7 @@ PREFIX = """Answer the following questions as best you can. You have access to t
 #Question: {input}
 #Thought:{agent_scratchpad}"""
 
-	
+    
 
 
 from langchain.agents.tools import Tool
@@ -63,8 +70,8 @@ from langchain.agents.mrkl.base import ZeroShotAgent
 
 
 def _get_math_prompt():
-	from langchain.prompts.prompt import PromptTemplate
-	_PROMPT_TEMPLATE = """You are GPT-3, and you can't do math.
+    from langchain.prompts.prompt import PromptTemplate
+    _PROMPT_TEMPLATE = """You are GPT-3, and you can't do math.
 
 write python code to do the math calculation, and write the output bellow
 
@@ -99,17 +106,40 @@ Begin.
 
 Question: {question}
 """
-	return  PromptTemplate(input_variables=["question"], template=_PROMPT_TEMPLATE)
-	
+    return  PromptTemplate(input_variables=["question"], template=_PROMPT_TEMPLATE)
+    
 
 class MyZeroShotAgent(ZeroShotAgent):
     """Agent for the MRKL chain."""
+    ##  Action Input多返回了一个换行符，导致匹配失效
+    ## 提取出来的Action Input是largest prime number smaller than 65"
+    ## 多了一个引号没处理掉，导致后面的caculator很容易出错（WolframAlpha就接受不了这种输入）
+    def _extract_tool_and_input(self, text: str) -> Optional[Tuple[str, str]]:
+        def get_action_and_input(llm_output: str) -> Tuple[str, str]:
+            """Parse out the action and input from the LLM output.
+
+            Note: if you're specifying a custom prompt for the ZeroShotAgent,
+            you will need to ensure that it meets the following Regex requirements.
+            The string starting with "Action:" and the following string starting
+            with "Action Input:" should be separated by a newline.
+            """
+            FINAL_ANSWER_ACTION = "Final Answer:"
+            if FINAL_ANSWER_ACTION in llm_output:
+                return "Final Answer", llm_output.split(FINAL_ANSWER_ACTION)[-1].strip()
+            regex = r"Action: (.*?)\nAction Input: (.*)"
+            match = re.search(regex, llm_output, re.DOTALL)
+            if not match:
+                raise ValueError(f"Could not parse LLM output: `{llm_output}`")
+            action = match.group(1).strip()
+            action_input = match.group(2)
+            return action, action_input.strip("\n").strip(" ").strip('"')
+        return get_action_and_input(text)
 
 from langchain.agents.loading import AGENT_TO_CLASS
 AGENT_TO_CLASS["my-zero-shot"]=MyZeroShotAgent
 
 class MyLLMMathChain(LLMMathChain):
-	prompt = _get_math_prompt()
+    prompt = _get_math_prompt()
 
 def _get_my_llm_math(llm: BaseLLM) -> BaseTool:
     return Tool(
@@ -133,19 +163,45 @@ openai.organization=config.get("main", "organization")
 openai.api_key=config.get("main", "api_key")
 model_name=config.get("main", "model")
 google_search_api_key=config.get("main","google_search_api_key")
+wolframalpha_appid=config.get("main","wolframalpha_appid")
+
 
 ## llm
-llm = OpenAI(model_name=model_name, temperature=1.0,openai_api_key=openai.api_key)
+llm = OpenAI(model_name=model_name, temperature=0.0,openai_api_key=openai.api_key)
 
 
 ### demo4
 
-os.environ["SERPAPI_API_KEY"] = google_search_api_key
+#os.environ["SERPAPI_API_KEY"] = google_search_api_key
 
 #tools = load_tools(["serpapi", "llm-math"], llm=llm)
 from langchain.agents.load_tools import _LLM_TOOLS
 _LLM_TOOLS["my-llm-math"]= _get_my_llm_math
-tools = load_tools(["serpapi", "my-llm-math"], llm=llm)
+
+#tools = load_tools(["serpapi", "my-llm-math","wolfram-alpha"], llm=llm, serpapi_api_key=google_search_api_key,wolfram_alpha_appid=wolframalpha_appid)
+tools = load_tools(["serpapi"], llm=llm, serpapi_api_key=google_search_api_key)
+
+
+
+from langchain.tools.wolfram_alpha.tool import WolframAlphaQueryRun
+from langchain.utilities.wolfram_alpha import WolframAlphaAPIWrapper
+
+class MyWolframAlphaQueryRun(WolframAlphaQueryRun):
+    name = "Calculator"
+    description = "Useful for when you need to answer questions about math."
+#    name = "Wolfram Alpha"
+#    description = (
+#        "A wrapper around Wolfram Alpha. "
+#        "Useful for when you need to answer questions about Math, "
+#        "Science, Technology, Culture, Society and Everyday Life. "
+#        "Input should be a search query."
+#    )
+
+
+wolframalpha_tool = MyWolframAlphaQueryRun(api_wrapper=WolframAlphaAPIWrapper(wolfram_alpha_appid = wolframalpha_appid))
+tools.append(wolframalpha_tool)
+
+
 agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,
                          agent_kwargs={"format_instructions":FORMAT_INSTRUCTIONS,"prefix":PREFIX})
 agent.run("Who is the current leader of Japan? What is the largest prime number that is smaller than their age")
