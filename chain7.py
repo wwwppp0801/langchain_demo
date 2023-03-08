@@ -16,39 +16,6 @@ from typing import Any, Callable, List, NamedTuple, Optional, Sequence, Tuple
 import openai
 openai.log="debug"
 
-import configparser
-
-
-FORMAT_INSTRUCTIONS = """Use the following format:
-
-Question: the input question you must answer
-Thought: you should always think about what to do
-Action: the action to take, should be one of [{tool_names}]
-Action Input: the input to the action
-Observation: the result of the action
-Thought: you should always think about what to do
-Action: the action to take, should be one of [{tool_names}]
-Action Input: the input to the action
-Observation: the result of the action
-... (this Thought/Action/Action Input/Observation can repeat N times)
-Thought: I now know the final answer
-Final Answer: the final answer to the original input question"""
-
-PREFIX = """Answer the following questions as best you can. You have access to the following tools, no calculate result manually:"""
-#FORMAT_INSTRUCTIONS = """Use the following format:
-#
-#Question: the input question you must answer
-#Thought: you should always think about what to do
-#Action: the action to take, should be one of [{tool_names}]
-#Action Input: the input to the action
-#Observation: the result of the action
-#... (this Thought/Action/Action Input/Observation can repeat N times)
-#Thought: I now know the final answer
-#Final Answer: the final answer to the original input question"""
-#SUFFIX = """Begin!
-#
-#Question: {input}
-#Thought:{agent_scratchpad}"""
 
     
 
@@ -69,46 +36,6 @@ from langchain.tools.base import BaseTool
 
 
 from langchain.agents.mrkl.base import ZeroShotAgent
-
-
-def _get_math_prompt():
-    from langchain.prompts.prompt import PromptTemplate
-    _PROMPT_TEMPLATE = """You are GPT-3, and you can't do math.
-
-write python code to do the math calculation, and write the output bellow
-
-Question: ${{Question with hard calculation.}}
-```python
-${{Code that prints what you need to know}}
-```
-```output
-${{Output of your code}}
-```
-Answer: ${{Answer}}
-
-Example:
-Question: What is 37593 * 67?
-```python
-def gcd(a, b):
-  if b == 0:
-    return a
-  else:
-    r = a % b
-    return gcd(b, r)
-print(37593*67//gcd(37593,67))
-```
-```output
-2518731
-```
-Answer: 2518731
-
-Begin.
-
-
-
-Question: {question}
-"""
-    return  PromptTemplate(input_variables=["question"], template=_PROMPT_TEMPLATE)
     
 
 class MyZeroShotAgent(ZeroShotAgent):
@@ -140,35 +67,17 @@ class MyZeroShotAgent(ZeroShotAgent):
 from langchain.agents.loading import AGENT_TO_CLASS
 AGENT_TO_CLASS["my-zero-shot"]=MyZeroShotAgent
 
-class MyLLMMathChain(LLMMathChain):
-    prompt = _get_math_prompt()
-
-def _get_my_llm_math(llm: BaseLLM) -> BaseTool:
-    return Tool(
-        name="Calculator",
-        description="Useful for when you need to answer questions about math.",
-        func=MyLLMMathChain(llm=llm, callback_manager=llm.callback_manager).run,
-        coroutine=MyLLMMathChain(llm=llm, callback_manager=llm.callback_manager).arun,
-    )
-
 
 
 
 
 
 ## llm
-llm = OpenAI(model_name=_env.model_name, temperature=0.0,openai_api_key=_env.api_key)
+llm = OpenAI(model_name=_env.model_name, temperature=1.0,openai_api_key=_env.api_key)
 
 
 ### demo4
 
-#os.environ["SERPAPI_API_KEY"] = google_search_api_key
-
-#tools = load_tools(["serpapi", "llm-math"], llm=llm)
-from langchain.agents.load_tools import _LLM_TOOLS
-_LLM_TOOLS["my-llm-math"]= _get_my_llm_math
-
-#tools = load_tools(["serpapi", "my-llm-math","wolfram-alpha"], llm=llm, serpapi_api_key=google_search_api_key,wolfram_alpha_appid=wolframalpha_appid)
 tools = load_tools(["serpapi"], llm=llm, serpapi_api_key=_env.google_search_api_key)
 
 
@@ -191,11 +100,26 @@ class MyWolframAlphaQueryRun(WolframAlphaQueryRun):
 wolframalpha_tool = MyWolframAlphaQueryRun(api_wrapper=WolframAlphaAPIWrapper(wolfram_alpha_appid = _env.wolframalpha_appid))
 tools.append(wolframalpha_tool)
 
+FORMAT_INSTRUCTIONS = """To use a tool, please use the following format:
 
+```
+Thought: Do I need to use a tool? Yes
+Action: the action to take, MUST be one of [{tool_names}]
+Action Input: the input to the action
+Observation: the result of the action
+```
+
+When you have a response to say to the Human, or if you do not need to use a tool, you MUST use the format:
+
+```
+Thought: Do I need to use a tool? No
+{ai_prefix}: [your response here]
+```"""
 
 #agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,
 #                         agent_kwargs={"format_instructions":FORMAT_INSTRUCTIONS,"prefix":PREFIX})
-agent = initialize_agent(tools, llm, agent="conversational-react-description", verbose=True)
+agent = initialize_agent(tools, llm, agent="conversational-react-description", verbose=True,
+                         agent_kwargs={"format_instructions":FORMAT_INSTRUCTIONS})
 #agent.run("Who is the current leader of Japan? What is the largest prime number that is smaller than their age")
 agent.run({"input":"Who is the current leader of Japan? What is the largest prime number that is smaller than their age","chat_history":""})
 #agent.run("中国人里，最有名的打过NBA的球员, 现在在干啥？")
