@@ -1,9 +1,8 @@
 ### 修改点：
+import _env
 
 import os
 import openai
-
-import configparser
 
 
 FORMAT_INSTRUCTIONS = """Use the following format:
@@ -69,22 +68,11 @@ doc_summary(lg_doc)
 
 
 
-
-# 创建一个ConfigParser对象
-config = configparser.ConfigParser()
-
-# 读取一个INI文件
-config.read("config.ini")
-
 # 设置组织ID和API密钥
-openai.organization=config.get("main", "organization")
-openai.api_key=config.get("main", "api_key")
-model_name=config.get("main", "model")
-google_search_api_key=config.get("main","google_search_api_key")
-os.environ["SERPAPI_API_KEY"] = google_search_api_key
+os.environ["SERPAPI_API_KEY"] = _env.google_search_api_key
 
 ## llm
-llm = OpenAI(model_name=model_name, temperature=1.0,openai_api_key=openai.api_key)
+llm = OpenAI(model_name=_env.model_name, temperature=1.0,openai_api_key=_env.api_key)
 
 
 ### demo4

@@ -1,0 +1,26 @@
+import os
+import configparser
+# 创建一个ConfigParser对象
+config = configparser.ConfigParser()
+
+# 读取一个INI文件
+config.read("config.ini")
+
+# 设置组织ID和API密钥
+#openai.organization=config.get("main", "organization")
+model_name=config.get("main", "model")
+google_search_api_key=config.get("main","google_search_api_key")
+openai_api_base=config.get("main","openai_api_base")
+organization=config.get("main", "organization")
+api_key=config.get("main", "api_key")
+wolframalpha_appid=config.get("main","wolframalpha_appid")
+
+### 少锋的代理
+if openai_api_base:
+    os.environ["OPENAI_API_BASE"]=openai_api_base
+    import openai
+else:
+    import openai
+    openai.organization=config.get("main", "organization")
+    openai.api_key=config.get("main", "api_key")
+

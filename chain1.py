@@ -1,6 +1,8 @@
 
+import _env
 import os
 import openai
+openai.log="debug"
 import configparser
 from langchain.chains import LLMChain
 from langchain.llms import OpenAI
@@ -12,27 +14,14 @@ from langchain.agents import initialize_agent
 
 
 
-# 创建一个ConfigParser对象
-config = configparser.ConfigParser()
-
-# 读取一个INI文件
-config.read("config.ini")
-
-# 设置组织ID和API密钥
-openai.organization=config.get("main", "organization")
-openai.api_key=config.get("main", "api_key")
-model_name=config.get("main", "model")
-google_search_api_key=config.get("main","google_search_api_key")
-
-openai.log="debug"
 
 ## llm
-llm = OpenAI(model_name=model_name, temperature=0.9,openai_api_key=openai.api_key)
+llm = OpenAI(model_name=_env.model_name, temperature=0.9,openai_api_key=_env.api_key)
 
 
 ### demo4
 
-os.environ["SERPAPI_API_KEY"] = google_search_api_key
+os.environ["SERPAPI_API_KEY"] = _env.google_search_api_key
 
 tools = load_tools(["serpapi", "llm-math"], llm=llm)
 agent = initialize_agent(tools, llm, agent="zero-shot-react-description", verbose=True)

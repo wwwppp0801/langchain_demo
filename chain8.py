@@ -2,6 +2,7 @@
 # pip install wikipedia -i https://pypi.tuna.tsinghua.edu.cn/simple
 # 同样是要修复 text=text.strip("\n \t") 的问题
 # 访问wikipedia需要翻墙
+import _env
 
 
 
@@ -78,22 +79,10 @@ from langchain.agents.agent import Agent, AgentExecutor
 
 
 
-# 创建一个ConfigParser对象
-config = configparser.ConfigParser()
-
-# 读取一个INI文件
-config.read("config.ini")
-
-# 设置组织ID和API密钥
-openai.organization=config.get("main", "organization")
-openai.api_key=config.get("main", "api_key")
-model_name=config.get("main", "model")
-google_search_api_key=config.get("main","google_search_api_key")
-wolframalpha_appid=config.get("main","wolframalpha_appid")
 
 
 ## llm
-llm = OpenAI(model_name=model_name, temperature=0.0,openai_api_key=openai.api_key)
+llm = OpenAI(model_name=_env.model_name, temperature=0.0,openai_api_key=_env.api_key)
 
 
 ### demo4

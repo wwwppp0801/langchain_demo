@@ -4,7 +4,7 @@
 #     * 让chatgpt补充Follow up问题和Final answer总结
 #       * 请求chatgpt加stop参数，禁止其补充Intermediate answer:的结果
 #     * 让搜索来补充Intermediate answer:的结果
-
+import _env
 
 
 import os
@@ -21,31 +21,18 @@ from langchain import OpenAI
 from langchain.agents import initialize_agent, Tool
 from langchain import LLMMathChain, SerpAPIWrapper
 import openai
-import configparser
-
 
 from langchain.agents.self_ask_with_search.base import SelfAskWithSearchAgent
 
 
 openai.log="debug"
 
-# 创建一个ConfigParser对象
-config = configparser.ConfigParser()
-
-# 读取一个INI文件
-config.read("config.ini")
-
-openai.organization=config.get("main", "organization")
-openai.api_key=config.get("main", "api_key")
-model_name=config.get("main", "model")
-google_search_api_key=config.get("main","google_search_api_key")
-wolframalpha_appid=config.get("main","wolframalpha_appid")
 
 
 
-llm = OpenAI(model_name="gpt-3.5-turbo", temperature=0,openai_api_key=openai.api_key)
+llm = OpenAI(model_name=_env.model_name, temperature=0,openai_api_key=_env.api_key)
 
-search = SerpAPIWrapper(serpapi_api_key=google_search_api_key)
+search = SerpAPIWrapper(serpapi_api_key=_env.google_search_api_key)
 tools = [
     Tool(
         name="Intermediate Answer",

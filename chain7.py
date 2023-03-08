@@ -8,12 +8,12 @@
 
 import _env
 
+
 import os
 import re
 from typing import Any, Callable, List, NamedTuple, Optional, Sequence, Tuple
 
 import openai
-
 openai.log="debug"
 
 import configparser
@@ -35,9 +35,6 @@ Thought: I now know the final answer
 Final Answer: the final answer to the original input question"""
 
 PREFIX = """Answer the following questions as best you can. You have access to the following tools, no calculate result manually:"""
-
-
-
 #FORMAT_INSTRUCTIONS = """Use the following format:
 #
 #Question: the input question you must answer
@@ -158,6 +155,7 @@ def _get_my_llm_math(llm: BaseLLM) -> BaseTool:
 
 
 
+
 ## llm
 llm = OpenAI(model_name=_env.model_name, temperature=0.0,openai_api_key=_env.api_key)
 
@@ -194,9 +192,12 @@ wolframalpha_tool = MyWolframAlphaQueryRun(api_wrapper=WolframAlphaAPIWrapper(wo
 tools.append(wolframalpha_tool)
 
 
-agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,
-                         agent_kwargs={"format_instructions":FORMAT_INSTRUCTIONS,"prefix":PREFIX})
-agent.run("Who is the current leader of Japan? What is the largest prime number that is smaller than their age")
+
+#agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,
+#                         agent_kwargs={"format_instructions":FORMAT_INSTRUCTIONS,"prefix":PREFIX})
+agent = initialize_agent(tools, llm, agent="conversational-react-description", verbose=True)
+#agent.run("Who is the current leader of Japan? What is the largest prime number that is smaller than their age")
+agent.run({"input":"Who is the current leader of Japan? What is the largest prime number that is smaller than their age","chat_history":""})
 #agent.run("中国人里，最有名的打过NBA的球员, 现在在干啥？")
 #agent.run(" What is the largest prime number that is smaller than 1293812746")
 
@@ -229,3 +230,4 @@ Final Answer: 61
 > Finished chain.
 
 '''
+
