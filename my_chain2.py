@@ -73,45 +73,6 @@ from langchain.tools.base import BaseTool
 
 from langchain.agents.mrkl.base import ZeroShotAgent
 
-
-def _get_math_prompt():
-    from langchain.prompts.prompt import PromptTemplate
-    _PROMPT_TEMPLATE = """You are GPT-3, and you can't do math.
-
-write python code to do the math calculation, and write the output bellow
-
-Question: ${{Question with hard calculation.}}
-```python
-${{Code that prints what you need to know}}
-```
-```output
-${{Output of your code}}
-```
-Answer: ${{Answer}}
-
-Example:
-Question: What is 37593 * 67?
-```python
-def gcd(a, b):
-  if b == 0:
-    return a
-  else:
-    r = a % b
-    return gcd(b, r)
-print(37593*67//gcd(37593,67))
-```
-```output
-2518731
-```
-Answer: 2518731
-
-Begin.
-
-
-
-Question: {question}
-"""
-    return  PromptTemplate(input_variables=["question"], template=_PROMPT_TEMPLATE)
     
 
 class MyZeroShotAgent(ZeroShotAgent):
@@ -143,51 +104,40 @@ class MyZeroShotAgent(ZeroShotAgent):
 from langchain.agents.loading import AGENT_TO_CLASS
 AGENT_TO_CLASS["my-zero-shot"]=MyZeroShotAgent
 
-class MyLLMMathChain(LLMMathChain):
-    prompt = _get_math_prompt()
-
-def _get_my_llm_math(llm: BaseLLM) -> BaseTool:
-    return Tool(
-        name="Calculator",
-        description="Useful for when you need to answer questions about math.",
-        func=MyLLMMathChain(llm=llm, callback_manager=llm.callback_manager).run,
-        coroutine=MyLLMMathChain(llm=llm, callback_manager=llm.callback_manager).arun,
-    )
 
 
 
 
 
 ## llm
-llm = OpenAI(model_name=_env.model_name, temperature=0.0,openai_api_key=_env.api_key)
+llm = OpenAI(model_name=_env.model_name, temperature=1.0,openai_api_key=_env.api_key)
 
 
 ### demo4
 
 #os.environ["SERPAPI_API_KEY"] = google_search_api_key
 
-#tools = load_tools(["serpapi", "llm-math"], llm=llm)
-from langchain.agents.load_tools import _LLM_TOOLS
-_LLM_TOOLS["my-llm-math"]= _get_my_llm_math
 
 #tools = load_tools(["serpapi", "my-llm-math","wolfram-alpha"], llm=llm, serpapi_api_key=google_search_api_key,wolfram_alpha_appid=wolframalpha_appid)
 tools = load_tools(["serpapi"], llm=llm, serpapi_api_key=_env.google_search_api_key)
 
+import my_python_calculator
+tools.append( my_python_calculator._get_my_llm_math(llm) )
 
 
 from langchain.tools.wolfram_alpha.tool import WolframAlphaQueryRun
 from langchain.utilities.wolfram_alpha import WolframAlphaAPIWrapper
 
 class MyWolframAlphaQueryRun(WolframAlphaQueryRun):
-    name = "Calculator"
-    description = "Useful for when you need to answer questions about math."
-#    name = "Wolfram Alpha"
-#    description = (
-#        "A wrapper around Wolfram Alpha. "
-#        "Useful for when you need to answer questions about Math, "
-#        "Science, Technology, Culture, Society and Everyday Life. "
-#        "Input should be a search query."
-#    )
+#    name = "Calculator"
+#    description = "Useful for when you need to answer questions about math."
+    name = "Wolfram Alpha"
+    description = (
+        "A wrapper around Wolfram Alpha. "
+        "Useful for when you need to answer questions about Math, "
+        "Science, Technology, Culture, Society and Everyday Life. "
+        "Input should be a search query."
+    )
 
 
 wolframalpha_tool = MyWolframAlphaQueryRun(api_wrapper=WolframAlphaAPIWrapper(wolfram_alpha_appid = _env.wolframalpha_appid))
@@ -197,6 +147,8 @@ tools.append(wolframalpha_tool)
 agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,
                          agent_kwargs={"format_instructions":FORMAT_INSTRUCTIONS,"prefix":PREFIX})
 agent.run("Who is the current leader of Japan? What is the largest prime number that is smaller than their age")
+#agent.run("2023年，速度最快的显卡是什么？价格是多少？")
+#agent.run("2023年，价格最贵的显卡是什么？价格是多少？")
 #agent.run("中国人里，最有名的打过NBA的球员, 现在在干啥？")
 #agent.run(" What is the largest prime number that is smaller than 1293812746")
 

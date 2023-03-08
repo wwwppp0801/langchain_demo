@@ -82,23 +82,25 @@ tools = load_tools(["serpapi"], llm=llm, serpapi_api_key=_env.google_search_api_
 
 
 
-from langchain.tools.wolfram_alpha.tool import WolframAlphaQueryRun
-from langchain.utilities.wolfram_alpha import WolframAlphaAPIWrapper
-
-class MyWolframAlphaQueryRun(WolframAlphaQueryRun):
-    name = "Calculator"
-    description = "Useful for when you need to answer questions about math."
-#    name = "Wolfram Alpha"
-#    description = (
-#        "A wrapper around Wolfram Alpha. "
-#        "Useful for when you need to answer questions about Math, "
-#        "Science, Technology, Culture, Society and Everyday Life. "
-#        "Input should be a search query."
-#    )
-
-
-wolframalpha_tool = MyWolframAlphaQueryRun(api_wrapper=WolframAlphaAPIWrapper(wolfram_alpha_appid = _env.wolframalpha_appid))
-tools.append(wolframalpha_tool)
+#from langchain.tools.wolfram_alpha.tool import WolframAlphaQueryRun
+#from langchain.utilities.wolfram_alpha import WolframAlphaAPIWrapper
+#
+#class MyWolframAlphaQueryRun(WolframAlphaQueryRun):
+#    name = "Calculator"
+#    description = "Useful for when you need to answer questions about math."
+##    name = "Wolfram Alpha"
+##    description = (
+##        "A wrapper around Wolfram Alpha. "
+##        "Useful for when you need to answer questions about Math, "
+##        "Science, Technology, Culture, Society and Everyday Life. "
+##        "Input should be a search query."
+##    )
+#
+#
+#wolframalpha_tool = MyWolframAlphaQueryRun(api_wrapper=WolframAlphaAPIWrapper(wolfram_alpha_appid = _env.wolframalpha_appid))
+#tools.append(wolframalpha_tool)
+import my_python_calculator
+tools.append( my_python_calculator._get_my_llm_math(llm) )
 
 FORMAT_INSTRUCTIONS = """To use a tool, please use the following format:
 
@@ -114,7 +116,10 @@ When you have a response to say to the Human, or if you do not need to use a too
 ```
 Thought: Do I need to use a tool? No
 {ai_prefix}: [your response here]
-```"""
+```
+
+
+"""
 
 #agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,
 #                         agent_kwargs={"format_instructions":FORMAT_INSTRUCTIONS,"prefix":PREFIX})
