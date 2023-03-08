@@ -19,6 +19,7 @@ wolframalpha_appid=config.get("main","wolframalpha_appid")
 if openai_api_base:
     os.environ["OPENAI_API_BASE"]=openai_api_base
     import openai
+    openai.api_key="xxxxxxxxxxx"
 else:
     import openai
     openai.organization=config.get("main", "organization")
