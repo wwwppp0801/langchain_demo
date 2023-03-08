@@ -1,5 +1,10 @@
 ### 修改点：
 # 覆盖_extract_tool_and_input函数，修复了返回值多一个换行的问题
+# 逻辑：
+#     * 让chatgpt补充Follow up问题和Final answer总结
+#       * 请求chatgpt加stop参数，禁止其补充Intermediate answer:的结果
+#     * 让搜索来补充Intermediate answer:的结果
+
 
 
 import os
