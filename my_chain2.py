@@ -68,16 +68,16 @@ class MyZeroShotAgent(ZeroShotAgent):
     ##  Action Input多返回了一个换行符，导致匹配失效
     ## 提取出来的Action Input是largest prime number smaller than 65"
     ## 多了一个引号没处理掉，导致后面的caculator很容易出错（WolframAlpha就接受不了这种输入）
-    PREFIX = """Answer the following questions as best you can. You have access to the following tools, no  manually actions:"""
+    PREFIX = """Answer the following questions as best you can. You have access to the following tools, no manually actions, :"""
 
     FORMAT_INSTRUCTIONS = """Use the following format:
 
 Question: the input question you must answer
 Thought: you should always think about what to do
-Action: the action to take, should be one of [{tool_names}]
+Action: the action to take, MUST be one of [{tool_names}]
 Action Input: the input to the action
 Observation: the result of the action
-... (this Thought/Action/Action can repeat 2 times)
+... (this Thought/Action/Action can repeat N times, N>0)
 Thought: I now know the final answer
 Final Answer: the final answer to the original input question
 
@@ -103,6 +103,10 @@ Thought:{agent_scratchpad}"""
             FINAL_ANSWER_ACTION = "Final Answer:"
             if FINAL_ANSWER_ACTION in llm_output:
                 return "Final Answer", llm_output.split(FINAL_ANSWER_ACTION)[-1].strip()
+            if "final answer" in llm_output:
+                return llm_output
+            if "Final answer" in llm_output:
+                return llm_output
             regex = r"Action: (.*?)\nAction Input: (.*)"
             match = re.search(regex, llm_output, re.DOTALL)
             if not match:
@@ -162,13 +166,11 @@ def _get_google_search(**kwargs: Any) -> BaseTool:
 
 
 import my_serp_api_wrapper
-tools.append(my_serp_api_wrapper._get_serpapi(serpapi_api_key=_env.google_search_api_key))
 
 #tools.append(_get_google_serper(serper_api_key=_env.google_search_api_key))
 #tools.append(_get_google_search(google_api_key=_env.google_search_api_key))
 
 import my_python_calculator
-#tools.append( my_python_calculator._get_my_llm_math(llm) )
 
 
 from langchain.tools.wolfram_alpha.tool import WolframAlphaQueryRun
@@ -184,44 +186,64 @@ class MyWolframAlphaQueryRun(WolframAlphaQueryRun):
         "Science, Technology, Culture, Society and Everyday Life. "
         "Input should be a search query."
     )
+    def _run(self, query: str) -> str:
+        """Use the WolframAlpha tool."""
+        query=query.strip(" \t\n\"'“”‘’")
+        return self.api_wrapper.run(query)
 
 
 
 wolframalpha_tool = MyWolframAlphaQueryRun(api_wrapper=WolframAlphaAPIWrapper(wolfram_alpha_appid = _env.wolframalpha_appid))
-tools.append(wolframalpha_tool)
 import my_translator_tool
+
+
+tools.append(my_serp_api_wrapper._get_serpapi(serpapi_api_key=_env.google_search_api_key))
+#tools.append( my_python_calculator._get_my_llm_math(llm) )
+tools.append(wolframalpha_tool)
 #tools.append(my_translator_tool.en_ch_translator)
 tools.append(my_translator_tool.ch_en_translator)
 
 
 agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,)
-#agent.run("Who is the current leader of Japan? What is the largest prime number that is smaller than their age")
-#agent.run("什么是比特币？它是如何创造出来的？")
-#agent.run("谁发现了苯和氨基酸的分子式？")
-#agent.run("2023年，谁最有可能是中国的总理")
-#agent.run("去年谁是中国的总理")
-#agent.run("2000年,谁是中国的总理")
-#agent.run("谁是中国历史上任期最长的总理")
-#agent.run("2023年，速度最快的显卡是什么？价格是多少？")
-#agent.run("2023年，价格最贵的显卡是什么？价格是多少？")
-#agent.run("中国人里，最有名的打过NBA的球员, 现在在干啥？")
-#agent.run("把圆周率计算到小数点后1000位")
-#agent.run("圆周率，保留小数点后前1000位")
-#agent.run("地球与太阳的距离，是土星与太阳的距离的几倍？")
-#agent.run("地球与太阳的距离，与土星与太阳的距离的比例？")
-#agent.run("地球与太阳的距离，是水星与太阳的距离的几倍？")
-agent.run("地球与太阳的距离，与水星与太阳的距离的比例？")
-#agent.run("把太阳系的行星按照质量排序")
-#agent.run("人类发现的最大的恒星，按照质量排序的前十名是哪些？")
-#agent.run("人类发现的最大的恒星，按照质量排序的前十名是哪些？")
-#agent.run("著名的小提琴协奏曲《贝多芬》是由哪位作曲家创作的？它的调号是什么？")
-#agent.run("Which composer wrote the famous violin concerto \"Beethoven\"? What is its key signature?")
-#agent.run(" What is the largest prime number that is smaller than 1293812746")
-#agent.run("北京今天的温度是多少摄氏度？")
-#agent.run("推荐5首周杰伦在2002年之前创作的歌")
-#agent.run("推荐1首周杰伦在2002年之前创作的歌")
-#agent.run("把1234分解质因数") ##fail
-#agent.run("Factor 1234 into prime factors") #使用WolframAlpha是可以的
+#query="Who is the current leader of Japan? What is the largest prime number that is smaller than their age"
+#query="什么是比特币？它是如何创造出来的？"
+#query="谁发现了苯和氨基酸的分子式？"
+#query="2023年，谁最有可能是中国的总理"
+#query="去年谁是中国的总理"
+#query="2000年,谁是中国的总理"
+#query="谁是中国历史上任期最长的总理" ## fail 说的温家宝
+#query="周恩来当中国国家总理总共多长时间？"
+#query="2023年，速度最快的显卡是什么？价格是多少？"
+#query="2023年，价格最贵的显卡是什么？价格是多少？"
+#query="中国人里，最有名的打过NBA的球员, 现在在干啥？"
+#query="把圆周率计算到小数点后1000位"
+#query="圆周率，保留小数点后前1000位"
+#query="地球与太阳的距离，是土星与太阳的距离的几倍？"
+#query="地球与太阳的距离，与土星与太阳的距离的比例？"
+#query="地球与太阳的距离，是水星与太阳的距离的几倍？"
+#query="地球与太阳的距离，与水星与太阳的距离的比例？"
+#query="把太阳系的行星按照质量排序"
+#query="人类发现的最大的恒星，按照质量排序的前十名是哪些？"
+#query="人类发现的最大的恒星，按照质量排序的前十名是哪些？"
+#query="著名的小提琴协奏曲《贝多芬》是由哪位作曲家创作的？它的调号是什么？"
+#query="Which composer wrote the famous violin concerto \"Beethoven\"? What is its key signature?"
+#query=" What is the largest prime number that is smaller than 1293812746"
+#query="北京今天的温度是多少摄氏度？"
+#query="推荐5首周杰伦在2002年之前创作的歌"
+#query="推荐1首周杰伦在2002年之前创作的歌"
+#query="把1234分解质因数" ##fail
+#query="Factor 1234 into prime factors" #使用WolframAlpha是可以的
+#query="求 x^2+9x-5 的最小值点" #使用WolframAlpha是可以的
+#query="已知引力常量为G，地球质量为M，地球半径为R，地球表面重力加速度为g，空间站质量为m，空间站在轨道上做圆周运动的向心加速度是多少？" #calculator算出了实际的数字3.718
+#query="已知引力常量为G，地球质量为M，地球半径为R，地球表面重力加速度为g，空间站质量为m，空间站在轨道上做圆周运动的周期是多少？" 
+#query="截面为等腰直角三角形的圆锥侧面展开图的圆心角弧度为"
+#query="如果（sin a + cos a）/（sin a - cos a）=-3，则tan 2a="
+#query="Roger has 5 tennis balls. He buys 2 more cans of tennis balls. Each can has 3 tennis balls. How many tennis balls does he have now?"
+#query="The cafeteria had 23 apples. If they used 20 to make lunch and bought 6 more, how many apples do they have?"
+#query="It takes Amy 4 minutes to climb to the top of a slide. It takes her 1 minute to slide down. The water slide closes in 15 minutes. How many times can she slide before it closes?"
+query="A needle 35 mm long rests on a water surface at 20◦C. What force over and above the needle’s weight is required to lift the needle from contact with the water surface? σ = 0.0728m"
+print(query)
+agent.run(query)
 
 
 
