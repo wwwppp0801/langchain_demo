@@ -138,7 +138,7 @@ AGENT_TO_CLASS["my-zero-shot"]=MyZeroShotAgent
 
 
 ## llm
-llm = OpenAI(model_name=_env.model_name, temperature=1.0,openai_api_key=_env.api_key)
+llm = OpenAI(model_name=_env.model_name, temperature=0.0,openai_api_key=_env.api_key)
 
 
 ### demo4
@@ -180,7 +180,10 @@ agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,)
 #agent.run("2023年，速度最快的显卡是什么？价格是多少？")
 #agent.run("2023年，价格最贵的显卡是什么？价格是多少？")
 #agent.run("中国人里，最有名的打过NBA的球员, 现在在干啥？")
-agent.run("把圆周率计算到小数点后1000位")
+#agent.run("把圆周率计算到小数点后1000位")
+#agent.run("圆周率，保留小数点后前1000位")
+#agent.run("地球与太阳的距离，是土星与太阳的距离的几倍？")
+agent.run("地球与太阳的距离，是水星与太阳的距离的几倍？")
 #agent.run(" What is the largest prime number that is smaller than 1293812746")
 
 
