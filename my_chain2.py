@@ -19,22 +19,6 @@ openai.log="debug"
 import configparser
 
 
-FORMAT_INSTRUCTIONS = """Use the following format:
-
-Question: the input question you must answer
-Thought: you should always think about what to do
-Action: the action to take, should be one of [{tool_names}]
-Action Input: the input to the action
-Observation: the result of the action
-Thought: you should always think about what to do
-Action: the action to take, should be one of [{tool_names}]
-Action Input: the input to the action
-Observation: the result of the action
-... (this Thought/Action/Action Input/Observation can repeat N times)
-Thought: I now know the final answer
-Final Answer: the final answer to the original input question"""
-
-PREFIX = """Answer the following questions as best you can. You have access to the following tools, no calculate result manually:"""
 
 
 
@@ -57,6 +41,7 @@ PREFIX = """Answer the following questions as best you can. You have access to t
 
 
 from langchain.agents.tools import Tool
+from langchain.agents.agent import Agent
 from langchain.chains.llm_math.base import LLMMathChain
 
 from langchain.chains import LLMChain
@@ -73,6 +58,9 @@ from langchain.tools.base import BaseTool
 
 from langchain.agents.mrkl.base import ZeroShotAgent
 
+from typing import Any, Callable, List, NamedTuple, Optional, Sequence, Tuple
+from langchain.tools.base import BaseTool
+from langchain.callbacks.base import BaseCallbackManager
     
 
 class MyZeroShotAgent(ZeroShotAgent):
@@ -80,6 +68,33 @@ class MyZeroShotAgent(ZeroShotAgent):
     ##  Action Input多返回了一个换行符，导致匹配失效
     ## 提取出来的Action Input是largest prime number smaller than 65"
     ## 多了一个引号没处理掉，导致后面的caculator很容易出错（WolframAlpha就接受不了这种输入）
+    PREFIX = """Answer the following questions as best you can. You have access to the following tools, no calculate result manually:"""
+
+    FORMAT_INSTRUCTIONS = """Use the following format:
+
+Question: the input question you must answer
+Thought: you should always think about what to do
+Action: the action to take, should be one of [{tool_names}]
+Action Input: the input to the action
+Observation: the result of the action
+Thought: you should always think about what to do
+Action: the action to take, should be one of [{tool_names}]
+Action Input: the input to the action
+Observation: the result of the action
+... (this Thought/Action/Action Input/Observation can repeat N times)
+Thought: I now know the final answer
+Final Answer: the final answer to the original input question
+
+
+"Final Answer:" MUST be include in last line
+
+"""
+    SUFFIX = """Begin!
+
+Question: {input}
+Thought:{agent_scratchpad}"""
+
+
     def _extract_tool_and_input(self, text: str) -> Optional[Tuple[str, str]]:
         def get_action_and_input(llm_output: str) -> Tuple[str, str]:
             """Parse out the action and input from the LLM output.
@@ -100,6 +115,19 @@ class MyZeroShotAgent(ZeroShotAgent):
             action_input = match.group(2)
             return action, action_input.strip("\n").strip(" ").strip('"')
         return get_action_and_input(text)
+    @classmethod
+    def from_llm_and_tools(
+        cls,
+        llm: BaseLLM,
+        tools: Sequence[BaseTool],
+        callback_manager: Optional[BaseCallbackManager] = None,
+        prefix: str = PREFIX,
+        suffix: str = SUFFIX,
+        format_instructions: str = FORMAT_INSTRUCTIONS,
+        input_variables: Optional[List[str]] = None,
+        **kwargs: Any,
+    ) -> Agent:
+        return ZeroShotAgent.from_llm_and_tools(llm,tools,callback_manager,prefix,suffix,format_instructions,input_variables,**kwargs)
 
 from langchain.agents.loading import AGENT_TO_CLASS
 AGENT_TO_CLASS["my-zero-shot"]=MyZeroShotAgent
@@ -144,12 +172,15 @@ wolframalpha_tool = MyWolframAlphaQueryRun(api_wrapper=WolframAlphaAPIWrapper(wo
 tools.append(wolframalpha_tool)
 
 
-agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,
-                         agent_kwargs={"format_instructions":FORMAT_INSTRUCTIONS,"prefix":PREFIX})
-agent.run("Who is the current leader of Japan? What is the largest prime number that is smaller than their age")
+agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,)
+#agent.run("Who is the current leader of Japan? What is the largest prime number that is smaller than their age")
+#agent.run("什么是比特币？它是如何创造出来的？")
+#agent.run("谁发现了苯和氨基酸的分子式？")
+#agent.run("2023年，谁最有可能是中国的总理")
 #agent.run("2023年，速度最快的显卡是什么？价格是多少？")
 #agent.run("2023年，价格最贵的显卡是什么？价格是多少？")
 #agent.run("中国人里，最有名的打过NBA的球员, 现在在干啥？")
+agent.run("把圆周率计算到小数点后1000位")
 #agent.run(" What is the largest prime number that is smaller than 1293812746")
 
 
