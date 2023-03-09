@@ -34,8 +34,8 @@ class MySerpAPIWrapper(SerpAPIWrapper):
         print("")
         print("")
         print("")
-        json_str = json.dumps(list(res.keys()))
-        print(json_str)
+        print(json.dumps(res))
+        #print(json.dumps(list(res.keys())))
         print("")
         print("")
         print("")
@@ -55,7 +55,8 @@ class MySerpAPIWrapper(SerpAPIWrapper):
             "answer_box" in res.keys()
         ):
 
-            toret = str(res["answer_box"])
+            #toret = str(res["answer_box"])
+            toret = json.dumps(remove_http_keys(res["answer_box"]))
         elif (
             "sports_results" in res.keys()
             and "game_spotlight" in res["sports_results"].keys()
@@ -69,13 +70,21 @@ class MySerpAPIWrapper(SerpAPIWrapper):
         elif (
             "knowledge_graph" in res.keys()
         ):
-            toret = json.dumps(remove_http_keys(res["knowledge_graph"]))
+            toret = "\n".join(map(lambda r:
+                                   "\n".join([r.get(key, '') for key in ['snippet']]),
+                                   res['organic_results'][:3])
+                               )
+            toret += json.dumps(remove_http_keys(res["knowledge_graph"]))
         elif "snippet" in res["organic_results"][0].keys():
-            toret = res["organic_results"][0]["snippet"]
+            #toret = res["organic_results"][0]["snippet"]
+            toret = " ".join(map(lambda r:
+                                   "\n".join([r.get(key, '') for key in ['snippet']]),
+                                   res['organic_results'][:3])
+                               )
             #### 看了一下结果，感觉相关问题的质量比较高
             if 'related_questions' in res:
-                toret += "\n".join(map(lambda r:
-                                       "\n".join([r.get(key, '') for key in ['question','snippet','title']]),
+                toret += " ".join(map(lambda r:
+                                       " ".join([r.get(key, '') for key in ['question','snippet','title']]),
                                        res['related_questions'][:3])
                                    )
         else:
@@ -96,16 +105,17 @@ if __name__=="__main__":
     #res=tool._run("Who discovered the molecular formula of amino acids?")
     
     #res=tool._run("Order of planets by mass")
-    #print(res)
+    res=tool._run("Jay Chou songs before 2002")
+    print(res)
 
 
-    import json
+    #import json
 
-    # 打开json文件
-    with open("test3.json", "r") as f:
-      # 读取并解析json数据，返回一个dict
-      data = json.load(f)
+    ## 打开json文件
+    #with open("test3.json", "r") as f:
+    #  # 读取并解析json数据，返回一个dict
+    #  data = json.load(f)
 
-    # 打印dict
-    print(remove_http_keys({"a":data['planets_by_mass']}))
+    ## 打印dict
+    #print(remove_http_keys({"a":data['planets_by_mass']}))
 

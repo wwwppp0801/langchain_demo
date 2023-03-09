@@ -68,7 +68,7 @@ class MyZeroShotAgent(ZeroShotAgent):
     ##  Action Input多返回了一个换行符，导致匹配失效
     ## 提取出来的Action Input是largest prime number smaller than 65"
     ## 多了一个引号没处理掉，导致后面的caculator很容易出错（WolframAlpha就接受不了这种输入）
-    PREFIX = """Answer the following questions as best you can. You have access to the following tools, no calculate result manually:"""
+    PREFIX = """Answer the following questions as best you can. You have access to the following tools, no  manually actions:"""
 
     FORMAT_INSTRUCTIONS = """Use the following format:
 
@@ -208,9 +208,13 @@ agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,)
 #agent.run("地球与太阳的距离，是水星与太阳的距离的几倍？")
 #agent.run("地球与太阳的距离，与水星与太阳的距离的比例？")
 #agent.run("把太阳系的行星按照质量排序")
-agent.run("人类发现的最大的恒星，按照质量排序的前十名是哪些？")
+#agent.run("人类发现的最大的恒星，按照质量排序的前十名是哪些？")
+#agent.run("人类发现的最大的恒星，按照质量排序的前十名是哪些？")
+#agent.run("著名的小提琴协奏曲《贝多芬》是由哪位作曲家创作的？它的调号是什么？")
+#agent.run("Which composer wrote the famous violin concerto \"Beethoven\"? What is its key signature?")
 #agent.run(" What is the largest prime number that is smaller than 1293812746")
 #agent.run("北京今天的温度是多少摄氏度？")
+agent.run("推荐5首周杰伦在2002年之前创作的歌")
 
 
 
