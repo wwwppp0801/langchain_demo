@@ -77,11 +77,7 @@ Thought: you should always think about what to do
 Action: the action to take, should be one of [{tool_names}]
 Action Input: the input to the action
 Observation: the result of the action
-Thought: you should always think about what to do
-Action: the action to take, should be one of [{tool_names}]
-Action Input: the input to the action
-Observation: the result of the action
-... (this Thought/Action/Action Input/Observation can repeat N times)
+... (this Thought/Action/Action can repeat 2 times)
 Thought: I now know the final answer
 Final Answer: the final answer to the original input question
 
@@ -145,9 +141,31 @@ llm = OpenAI(model_name=_env.model_name, temperature=0.0,openai_api_key=_env.api
 
 #os.environ["SERPAPI_API_KEY"] = google_search_api_key
 
-
+tools=[]
 #tools = load_tools(["serpapi", "my-llm-math","wolfram-alpha"], llm=llm, serpapi_api_key=google_search_api_key,wolfram_alpha_appid=wolframalpha_appid)
-tools = load_tools(["serpapi"], llm=llm, serpapi_api_key=_env.google_search_api_key)
+#tools = load_tools(["serpapi"], llm=llm, serpapi_api_key=_env.google_search_api_key)
+
+from langchain.utilities.google_serper import GoogleSerperAPIWrapper
+def _get_google_serper(**kwargs: Any) -> BaseTool:
+    return Tool(
+        name="Serper Search",
+        func=GoogleSerperAPIWrapper(**kwargs).run,
+        description="A low-cost Google Search API. Useful for when you need to answer questions about current events. Input should be a search query.",
+    )
+
+
+from langchain.tools.google_search.tool import GoogleSearchResults, GoogleSearchRun
+from langchain.utilities.google_search import GoogleSearchAPIWrapper
+
+def _get_google_search(**kwargs: Any) -> BaseTool:
+    return GoogleSearchRun(api_wrapper=GoogleSearchAPIWrapper(**kwargs))
+
+
+import my_serp_api_wrapper
+tools.append(my_serp_api_wrapper._get_serpapi(serpapi_api_key=_env.google_search_api_key))
+
+#tools.append(_get_google_serper(serper_api_key=_env.google_search_api_key))
+#tools.append(_get_google_search(google_api_key=_env.google_search_api_key))
 
 import my_python_calculator
 tools.append( my_python_calculator._get_my_llm_math(llm) )
@@ -168,8 +186,9 @@ class MyWolframAlphaQueryRun(WolframAlphaQueryRun):
     )
 
 
+
 wolframalpha_tool = MyWolframAlphaQueryRun(api_wrapper=WolframAlphaAPIWrapper(wolfram_alpha_appid = _env.wolframalpha_appid))
-tools.append(wolframalpha_tool)
+#tools.append(wolframalpha_tool)
 
 
 agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,)
@@ -177,14 +196,21 @@ agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,)
 #agent.run("什么是比特币？它是如何创造出来的？")
 #agent.run("谁发现了苯和氨基酸的分子式？")
 #agent.run("2023年，谁最有可能是中国的总理")
+#agent.run("去年谁是中国的总理")
+#agent.run("谁是中国历史上任期最长的总理")
 #agent.run("2023年，速度最快的显卡是什么？价格是多少？")
 #agent.run("2023年，价格最贵的显卡是什么？价格是多少？")
 #agent.run("中国人里，最有名的打过NBA的球员, 现在在干啥？")
 #agent.run("把圆周率计算到小数点后1000位")
 #agent.run("圆周率，保留小数点后前1000位")
 #agent.run("地球与太阳的距离，是土星与太阳的距离的几倍？")
-agent.run("地球与太阳的距离，是水星与太阳的距离的几倍？")
+#agent.run("地球与太阳的距离，与土星与太阳的距离的比例？")
+#agent.run("地球与太阳的距离，是水星与太阳的距离的几倍？")
+#agent.run("地球与太阳的距离，与水星与太阳的距离的比例？")
+#agent.run("把太阳系的行星按照质量排序")
+agent.run("人类发现的最大的恒星，按照质量排序的前十名是哪些？")
 #agent.run(" What is the largest prime number that is smaller than 1293812746")
+#agent.run("北京今天的温度是多少摄氏度？")
 
 
 
