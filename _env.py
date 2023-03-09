@@ -14,6 +14,8 @@ openai_api_base=config.get("main","openai_api_base")
 organization=config.get("main", "organization")
 api_key=config.get("main", "api_key")
 wolframalpha_appid=config.get("main","wolframalpha_appid")
+baidu_trans_app_id=config.get("main","baidu_trans_app_id")
+baidu_trans_secret_key=config.get("main","baidu_trans_secret_key")
 
 ### 少锋的代理
 if openai_api_base:

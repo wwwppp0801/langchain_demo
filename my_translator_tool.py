@@ -9,7 +9,7 @@ import time
 
 
 def trans(text:str,_from:str ="zh", _to:str="en"):
-
+    text=text.strip(" \t\n\"\'“”‘’")
     # 定义要翻译的源语言和目标语言
     from_lang = _from # 中文
     to_lang = _to  # 英文

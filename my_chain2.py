@@ -168,7 +168,7 @@ tools.append(my_serp_api_wrapper._get_serpapi(serpapi_api_key=_env.google_search
 #tools.append(_get_google_search(google_api_key=_env.google_search_api_key))
 
 import my_python_calculator
-tools.append( my_python_calculator._get_my_llm_math(llm) )
+#tools.append( my_python_calculator._get_my_llm_math(llm) )
 
 
 from langchain.tools.wolfram_alpha.tool import WolframAlphaQueryRun
@@ -188,7 +188,10 @@ class MyWolframAlphaQueryRun(WolframAlphaQueryRun):
 
 
 wolframalpha_tool = MyWolframAlphaQueryRun(api_wrapper=WolframAlphaAPIWrapper(wolfram_alpha_appid = _env.wolframalpha_appid))
-#tools.append(wolframalpha_tool)
+tools.append(wolframalpha_tool)
+import my_translator_tool
+#tools.append(my_translator_tool.en_ch_translator)
+tools.append(my_translator_tool.ch_en_translator)
 
 
 agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,)
@@ -197,6 +200,7 @@ agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,)
 #agent.run("谁发现了苯和氨基酸的分子式？")
 #agent.run("2023年，谁最有可能是中国的总理")
 #agent.run("去年谁是中国的总理")
+#agent.run("2000年,谁是中国的总理")
 #agent.run("谁是中国历史上任期最长的总理")
 #agent.run("2023年，速度最快的显卡是什么？价格是多少？")
 #agent.run("2023年，价格最贵的显卡是什么？价格是多少？")
@@ -206,7 +210,7 @@ agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,)
 #agent.run("地球与太阳的距离，是土星与太阳的距离的几倍？")
 #agent.run("地球与太阳的距离，与土星与太阳的距离的比例？")
 #agent.run("地球与太阳的距离，是水星与太阳的距离的几倍？")
-#agent.run("地球与太阳的距离，与水星与太阳的距离的比例？")
+agent.run("地球与太阳的距离，与水星与太阳的距离的比例？")
 #agent.run("把太阳系的行星按照质量排序")
 #agent.run("人类发现的最大的恒星，按照质量排序的前十名是哪些？")
 #agent.run("人类发现的最大的恒星，按照质量排序的前十名是哪些？")
@@ -214,7 +218,10 @@ agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,)
 #agent.run("Which composer wrote the famous violin concerto \"Beethoven\"? What is its key signature?")
 #agent.run(" What is the largest prime number that is smaller than 1293812746")
 #agent.run("北京今天的温度是多少摄氏度？")
-agent.run("推荐5首周杰伦在2002年之前创作的歌")
+#agent.run("推荐5首周杰伦在2002年之前创作的歌")
+#agent.run("推荐1首周杰伦在2002年之前创作的歌")
+#agent.run("把1234分解质因数") ##fail
+#agent.run("Factor 1234 into prime factors") #使用WolframAlpha是可以的
 
 
 
