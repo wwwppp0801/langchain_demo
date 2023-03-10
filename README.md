@@ -4,6 +4,18 @@
 pip install langchain==0.0.100
 pip install openai
 pip install google-search-results
+pip install wolframalpha
+pip install nltk
+pip install chromadb
+
+pip install sympy
+```
+
+# webui依赖
+
+```
+pip install flask
+pip install flask_socketio
 ```
 
 # chain3的依赖

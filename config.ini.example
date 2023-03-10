@@ -14,3 +14,12 @@ openai_api_base=
 model=gpt-3.5-turbo
 
 google_search_api_key=zzzzzzzzzzzzzzzzzzzzzzzzzzzz
+
+# 百度翻译
+
+baidu_trans_app_id=
+baidu_trans_secret_key=
+
+python_path=/usr/bin/python3
+host=0.0.0.0
+port=8002

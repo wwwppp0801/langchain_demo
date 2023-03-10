@@ -17,6 +17,10 @@ wolframalpha_appid=config.get("main","wolframalpha_appid")
 baidu_trans_app_id=config.get("main","baidu_trans_app_id")
 baidu_trans_secret_key=config.get("main","baidu_trans_secret_key")
 
+python_path=config.get("main","python_path")
+host=config.get("main","host")
+port=config.get("main","port")
+
 ### 少锋的代理
 if openai_api_base:
     os.environ["OPENAI_API_BASE"]=openai_api_base

@@ -1,3 +1,4 @@
+import _env
 import click
 import sys
 import time
@@ -34,7 +35,7 @@ def handle_submit(data):
     command = data['command']
     tools = data['tools']
     print(data)
-    process = subprocess.Popen(["python" ,"-u","my_chain2.py", command, tools], stdout=subprocess.PIPE, stderr=subprocess.PIPE , bufsize=0)
+    process = subprocess.Popen([_env.python_path ,"-u","my_chain2.py", command, tools], stdout=subprocess.PIPE, stderr=subprocess.PIPE , bufsize=0)
     # 创建一个空集合，用于存放已经结束的文件对象
     stdout = process.stdout
     stderr = process.stderr
@@ -103,4 +104,4 @@ def download(filename):
 
 if __name__ == "__main__":
      # run the app or the command depending on the arguments
-    app.run(host="::", port="8002")
+    app.run(host=_env.host, port=_env.port)
