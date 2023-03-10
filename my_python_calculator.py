@@ -60,13 +60,24 @@ def _get_my_llm_math(llm: BaseLLM) -> BaseTool:
     )
 
 def get_python_coder_tool() -> BaseTool:
+    def extract_code_blocks(string):
+        import re
+        pattern = r'```(?:python)?\s*(.*?)\s*```' 
+        code_blocks = re.findall(pattern, string, flags=re.DOTALL)
+        # Return the list of code blocks as output
+        return code_blocks
+
     def run_python_code(code:str):
         python_executor = PythonREPL()
-        code = code.split("```")[1].strip("\n\t\r ")
-        output = python_executor.run(code)
+        #code = code.split("```")[1].strip("\n\t\r ")
+        code_blocks=extract_code_blocks(code)
+        if len(code_blocks)==0:
+            raise NotImplementedError("no code here",code)
+        output = python_executor.run(code_blocks[0])
         #print(code)
         #print(output)
         return output
+
 
     async def _arun(self, tool_input: str) -> str:
         raise NotImplementedError("Tool does not support async")
@@ -81,6 +92,18 @@ if __name__=="__main__":
     code='''
 
 ```
+import hashlib
+
+string = "123456"
+hash_object = hashlib.md5(string.encode())
+print(hash_object.hexdigest())
+```
+'''
+    result=get_python_coder_tool()._run(code)
+    
+    code='''
+
+```python
 import hashlib
 
 string = "123456"
