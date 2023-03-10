@@ -253,6 +253,8 @@ if len(sys.argv) > 1:
                 tools.append(my_translator_tool.ch_en_translator)
             elif toolStr == "search":
                 tools.append(my_serp_api_wrapper._get_serpapi(serpapi_api_key=_env.google_search_api_key))
+            elif toolStr == "python_coder":
+                tools.append(my_python_calculator.get_python_coder_tool())
 else:
     tools.append(my_serp_api_wrapper._get_serpapi(serpapi_api_key=_env.google_search_api_key))
     #tools.append( my_python_calculator._get_my_llm_math(llm) )

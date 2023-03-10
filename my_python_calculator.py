@@ -2,10 +2,14 @@ from langchain.agents.tools import Tool
 from langchain.chains.llm_math.base import LLMMathChain
 from langchain.llms.base import BaseLLM
 from langchain.tools.base import BaseTool
+from langchain.python import PythonREPL
 
-def _get_math_prompt():
-    from langchain.prompts.prompt import PromptTemplate
-    _PROMPT_TEMPLATE = """You are GPT-3, and you can't do math.
+
+
+class MyLLMMathChain(LLMMathChain):
+    def _get_math_prompt():
+        from langchain.prompts.prompt import PromptTemplate
+        _PROMPT_TEMPLATE = """You are GPT-3, and you can't do math.
 
 write python code to do the math calculation, and write the output bellow
 
@@ -43,10 +47,7 @@ Begin.
 
 Question: {question}
 """
-    return  PromptTemplate(input_variables=["question"], template=_PROMPT_TEMPLATE)
-
-
-class MyLLMMathChain(LLMMathChain):
+        return  PromptTemplate(input_variables=["question"], template=_PROMPT_TEMPLATE)
     prompt = _get_math_prompt()
 
 
@@ -58,3 +59,34 @@ def _get_my_llm_math(llm: BaseLLM) -> BaseTool:
         coroutine=MyLLMMathChain(llm=llm, callback_manager=llm.callback_manager).arun,
     )
 
+def get_python_coder_tool() -> BaseTool:
+    def run_python_code(code:str):
+        python_executor = PythonREPL()
+        code = code.split("```")[1].strip("\n\t\r ")
+        output = python_executor.run(code)
+        #print(code)
+        #print(output)
+        return output
+
+    async def _arun(self, tool_input: str) -> str:
+        raise NotImplementedError("Tool does not support async")
+
+    return Tool(
+        name="PythonCoder",
+        description="you can write python code to solve the problem",
+        func=run_python_code,
+        coroutine=_arun,
+    )
+if __name__=="__main__":
+    code='''
+
+```
+import hashlib
+
+string = "123456"
+hash_object = hashlib.md5(string.encode())
+print(hash_object.hexdigest())
+```
+'''
+    result=get_python_coder_tool()._run(code)
+    print(result)
