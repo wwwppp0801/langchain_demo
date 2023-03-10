@@ -179,7 +179,7 @@ from langchain.utilities.wolfram_alpha import WolframAlphaAPIWrapper
 class MyWolframAlphaQueryRun(WolframAlphaQueryRun):
 #    name = "Calculator"
 #    description = "Useful for when you need to answer questions about math."
-    name = "Wolfram Alpha"
+    name = "WolframAlpha"
     description = (
         "A wrapper around Wolfram Alpha. "
         "Useful for when you need to answer questions about Math, "
@@ -224,7 +224,7 @@ agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,)
 #query="地球与太阳的距离，与水星与太阳的距离的比例？"
 #query="把太阳系的行星按照质量排序"
 #query="人类发现的最大的恒星，按照质量排序的前十名是哪些？"
-#query="人类发现的最大的恒星，按照质量排序的前十名是哪些？"
+query="人类发现的最大的恒星，按照质量排序的前十名是哪些？"
 #query="著名的小提琴协奏曲《贝多芬》是由哪位作曲家创作的？它的调号是什么？"
 #query="Which composer wrote the famous violin concerto \"Beethoven\"? What is its key signature?"
 #query=" What is the largest prime number that is smaller than 1293812746"
@@ -241,7 +241,13 @@ agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,)
 #query="Roger has 5 tennis balls. He buys 2 more cans of tennis balls. Each can has 3 tennis balls. How many tennis balls does he have now?"
 #query="The cafeteria had 23 apples. If they used 20 to make lunch and bought 6 more, how many apples do they have?"
 #query="It takes Amy 4 minutes to climb to the top of a slide. It takes her 1 minute to slide down. The water slide closes in 15 minutes. How many times can she slide before it closes?"
-query="A needle 35 mm long rests on a water surface at 20◦C. What force over and above the needle’s weight is required to lift the needle from contact with the water surface? σ = 0.0728m"
+#query="A needle 35 mm long rests on a water surface at 20◦C. What force over and above the needle’s weight is required to lift the needle from contact with the water surface? σ = 0.0728m"
+
+import sys
+if len(sys.argv) > 1:
+     query=sys.argv[1]
+
+
 print(query)
 agent.run(query)
 

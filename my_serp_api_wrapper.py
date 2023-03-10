@@ -2,6 +2,7 @@ from langchain.utilities.serpapi import SerpAPIWrapper
 from langchain.tools.base import BaseTool
 from typing import Any, Callable, List, NamedTuple, Optional, Sequence, Tuple
 from langchain.agents.tools import Tool
+import sys
 import json
 
 
@@ -31,14 +32,14 @@ class MySerpAPIWrapper(SerpAPIWrapper):
     @staticmethod
     def _process_response(res: dict) -> str:
         """Process response from SerpAPI."""
-        print("")
-        print("")
-        print("")
-        print(json.dumps(res))
+        print("", file=sys.stderr)
+        print("", file=sys.stderr)
+        print("", file=sys.stderr)
+        print(json.dumps(res), file=sys.stderr)
         #print(json.dumps(list(res.keys())))
-        print("")
-        print("")
-        print("")
+        print("", file=sys.stderr)
+        print("", file=sys.stderr)
+        print("", file=sys.stderr)
         if "error" in res.keys():
             raise ValueError(f"Got error from SerpAPI: {res['error']}")
         if "answer_box" in res.keys() and "answer" in res["answer_box"].keys():

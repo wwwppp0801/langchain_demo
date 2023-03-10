@@ -1,19 +1,24 @@
 <!--doctype html-->
 <html>
 <head>
-    <title>SocketIO Demo</title>
+    <title>langchain webui</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
 </head>
 <body>
     <div class="container">
-        <h1>SocketIO Demo</h1>
-        <form id="form" action="#">
-            <div class="form-group">
-                <label for="input">Enter a command:</label>
-                <input type="text" class="form-control" id="input" placeholder="Enter a command">
-            </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
+        <div class="row mt-5">
+            <form id="form" action="#">
+                <div class="form-group col-md-10 d-flex align-items-center">
+                    <label for="input">Enter a command:</label>
+                    <input type="text" class="form-control" id="input" placeholder="Enter a command">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
+        <h3>程序输出</h1>
         <div id="output" class="well"></div>
+        <h3>openai请求日志</h1>
+        <div id="errorlog" class="well"></div>
     </div>
 
     <!-- Load socket.io -->
@@ -30,6 +35,7 @@
         var form = document.getElementById('form');
         var input = document.getElementById('input');
         var output = document.getElementById('output');
+        var errorlog = document.getElementById('errorlog');
 
         // Listen for form submit event
         form.addEventListener('submit', function(event) {
@@ -53,6 +59,16 @@
                 var html_line = ansi_up.ansi_to_html(line);
                 // Append the result line to the output element
                 output.innerHTML += html_line + '<br>';
+            }
+        });
+        socket.on('errorlog', function(data) {
+            var line = data['line'];
+            if (line) {
+                // Convert ANSI escape codes to HTML tags using ansi_up library (https://github.com/drudru/ansi_up)
+                var ansi_up = new AnsiUp;
+                var html_line = ansi_up.ansi_to_html(line);
+                // Append the result line to the output element
+                errorlog.innerHTML += html_line + '<br>';
             }
         });
     </script>
