@@ -21,6 +21,11 @@ def index():
 import os
 os.environ ['PYTHONUNBUFFERED'] = '1'
 
+current_dir = os.getcwd()
+
+UPLOAD_FOLDER=current_dir+"/upload"
+app.config["UPLOAD_FOLDER"]=UPLOAD_FOLDER
+
 
 import select
 
@@ -71,6 +76,28 @@ def handle_submit(data):
 #    for line in iter(process.stdout.readline, b''):
 #        socketio.emit('result', {'line': line.decode()})
 
+# 定义上传成功路由，处理文件上传请求
+@app.route("/upload", methods=["POST"])
+def upload():
+    if request.method == "POST":
+        # 获取表单中的文件对象
+        file = request.files["file"]
+        # 检查文件是否存在并且合法
+        if file and file.filename:
+            # 保存文件到指定目录
+            file.save(os.path.join(app.config["UPLOAD_FOLDER"], file.filename))
+            # 返回成功信息和下载链接
+            return f""" <p>File <b>{file.filename}</b> uploaded successfully.</p> """
+            #<a href="/download/{file.filename}">Download</a>
+        else:
+            # 返回错误信息
+            return "<p>No file selected or invalid file.</p>"
+
+# 定义下载路由，发送已经保存的文件给客户端
+@app.route("/download/<filename>")
+def download(filename):
+    # 从指定目录发送文件给客户端
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
 
 

@@ -255,6 +255,22 @@ if len(sys.argv) > 1:
                 tools.append(my_serp_api_wrapper._get_serpapi(serpapi_api_key=_env.google_search_api_key))
             elif toolStr == "python_coder":
                 tools.append(my_python_calculator.get_python_coder_tool())
+            elif toolStr.startswith("file_search_tool"):
+                #description :str = "Any question must first use this tool, using the original question as Action Input"
+                description :str = "question inlcude <file> flag,  MUST first use this tool, using the original question as \"Action Input\""
+                file="./data/PaulGrahamEssays/worked.txt"
+                tokens=toolsStr.split(":")
+                if len(tokens)>=2:
+                    file="upload/"+tokens[1]
+                if len(tokens)>=3:
+                    description=tokens[2]
+                import file_search_tool
+                tool = file_search_tool.CustomFileSearchTool(
+                        name = "FileSearchTool",
+                        description = description,
+                        )
+                tool.load_from_file(file)
+                tools.append(tool)
 else:
     tools.append(my_serp_api_wrapper._get_serpapi(serpapi_api_key=_env.google_search_api_key))
     #tools.append( my_python_calculator._get_my_llm_math(llm) )

@@ -89,9 +89,10 @@ text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
 
 texts = text_splitter.split_documents(documents)
 
-embeddings = OpenAIEmbeddings(openai_api_key=openai.api_key)
+#embeddings = OpenAIEmbeddings(openai_api_key=openai.api_key)
 
-docsearch = Chroma.from_documents(texts, embeddings)
+#docsearch = Chroma.from_documents(texts, embeddings)
+docsearch = Chroma.from_documents(texts)
 
 
 qa = VectorDBQA.from_chain_type(llm=llm, chain_type="stuff", vectorstore=docsearch)

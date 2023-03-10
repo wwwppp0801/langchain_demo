@@ -1,18 +1,18 @@
 <!--doctype html-->
 <html>
-<head>
-    <title>langchain webui</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
-</head>
-<body>
-    <div class="container">
-        <div class="row mt-5">
-            <form id="form" action="#">
-                <div class="form-group col-md-10 d-flex align-items-center">
-                    <input type="text" class="form-control" id="input" placeholder="Enter a command">
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                </div>
-                <div class="input-group" id="checkbox_group">
+    <head>
+        <title>langchain webui</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    </head>
+    <body>
+        <div class="container">
+            <div class="row mt-5">
+                <form id="form" action="#">
+                    <div class="form-group col-md-10 d-flex align-items-center">
+                        <input type="text" class="form-control" id="input" placeholder="Enter a command">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                    <div class="input-group" id="checkbox_group">
                         <!-- Checkbox 2 -->
                         <div class="input-group-text">
                             <input class="form-check-input" type="checkbox" value="search" id="tool2" checked>
@@ -38,89 +38,156 @@
                             <input class="form-check-input" type="checkbox" value="calculator" id= "tool5">
                             <label class= "form-check-label" for= "tool5">calculator</label>
                         </div>
-                        <!-- Checkbox 5 -->
+                        <!-- Checkbox 6 -->
                         <div class="input-group-text">
                             <input class="form-check-input" type="checkbox" value="python_coder" id= "tool6">
                             <label class= "form-check-label" for= "tool6">python_coder</label>
                         </div>
+                        <!-- Checkbox 7 -->
+                        <div class="input-group-text">
+                            <input class="form-check-input" type="checkbox" value="file_search_tool" id= "tool7">
+                            <label class= "form-check-label" for= "tool7">file_search_tool</label>
+                        </div>
                     </div>
                 </form>
-            </form>
+            </div>
+
+            <div class="row mb-1">
+                <form id="upload_form" method="post" action="/upload" enctype="multipart/form-data">
+                    <!-- 添加一个文件选择元素 -->
+                    <input type="file" name="file" id="file">
+                    <!-- 添加一个隐藏的input元素，用来存储文件名 -->
+                    <input type="hidden" name="filename" id="filename">
+                    <!-- 添加一个提交按钮 -->
+                    <input type="submit" value="Upload">
+                </form>
+                <!-- 显示上传结果 -->
+                <div id="result"></div>
+            </div>
+
+            <h3>程序输出</h1>
+            <div id="output" class="well"></div>
+            <h3>openai请求日志</h1>
+            <div id="errorlog" class="well"></div>
         </div>
-        <h3>程序输出</h1>
-        <div id="output" class="well"></div>
-        <h3>openai请求日志</h1>
-        <div id="errorlog" class="well"></div>
-    </div>
 
-    <!-- Load socket.io -->
-    <script src="{{ url_for('static', filename='socket.io.js') }}"></script>
-    <script src="{{ url_for('static', filename='ansi_up.js') }}"></script>
-    <script src="{{ url_for('static', filename='jquery-1.7.2.min.js') }}"></script>
+        <!-- Load socket.io -->
+        <script src="{{ url_for('static', filename='socket.io.js') }}"></script>
+        <script src="{{ url_for('static', filename='ansi_up.js') }}"></script>
+        <script src="{{ url_for('static', filename='jquery-1.7.2.min.js') }}"></script>
 
-    <!-- Custom script -->
-    <script>
-        function getToolValues(){
-            var tools = $("#checkbox_group input:checked");
+        <!-- Custom script -->
+        <script>
+            $("#upload_form").submit(function(e){
+                // 阻止默认行为
+                e.preventDefault();
+                // 获取表单中的文件对象
+                var file = $("#file")[0].files[0];
+                // 检查文件是否存在并且合法
+                if (file && file.name) {
+                    // 创建一个FormData对象
+                    var formData = new FormData();
+                    // 将文件添加到FormData对象中
+                    formData.append("file", file);
+                    // 将文件名添加到FormData对象中
+                    formData.append("filename", file.name);
+                    // 使用ajax()方法发送请求到服务器端
+                    $.ajax({
+                        url: "/upload",
+                        type: "POST",
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function(data) {
+                            // 如果成功，显示返回的信息
+                            $("#result").html(data);
+                        },
+                        error: function(xhr, status, error) {
+                            // 如果失败，显示错误信息
+                            $("#result").html(error);
+                        }
+                    });
+                } else {
+                    // 如果没有选择或者无效的文件，显示错误信息
+                    $("#result").html("<p>No file selected or invalid file.</p>");
+                }
+            });
+            let filename="";
+            // 监听onchange事件
+            $("#file").change((e) => {
+                // 获取FileList对象
+                const files = e.target.files;
+                // 获取第一个文件的文件名
+                const filename = files[0].name;
+                // 打印文件名
+                console.log(filename);
+            });
+            
+            function getToolValues(){
+                var tools = $("#checkbox_group input:checked");
 
-            // Create an array to store the values of the checked checkboxes
-            var toolValues = [];
+                // Create an array to store the values of the checked checkboxes
+                var toolValues = [];
 
-            // Loop through each checked checkbox and push its value to the array
-            tools.each(function() {
-                toolValues.push($(this).val());
+                // Loop through each checked checkbox and push its value to the array
+                tools.each(function() {
+                    if($(this).val()=="file_search_tool" && filename){
+                        toolValues.push($(this).val()+":"+filename);
+                    }
+                    toolValues.push($(this).val());
+                    
+                });
+
+                // Join the array elements with a comma separator
+                var toolString = toolValues.join(",");
+                return toolString
+            }
+            // Get the socket object
+            var socket = io.connect();
+
+            // Get the DOM elements
+            var form = document.getElementById('form');
+            var input = document.getElementById('input');
+            var output = document.getElementById('output');
+            var errorlog = document.getElementById('errorlog');
+
+            // Listen for form submit event
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                $("#output").html("")
+                $("#errorlog").html("")
+                var command = input.value;
+                if (command) {
+                    // Send the command to the server
+                    socket.emit('submit', {command: command,tools:getToolValues()});
+                    // Clear the input field
+                    input.value = '';
+                }
             });
 
-            // Join the array elements with a comma separator
-            var toolString = toolValues.join(",");
-            return toolString
-        }
-        // Get the socket object
-        var socket = io.connect();
 
-        // Get the DOM elements
-        var form = document.getElementById('form');
-        var input = document.getElementById('input');
-        var output = document.getElementById('output');
-        var errorlog = document.getElementById('errorlog');
+            // Listen for result event from the server
+            socket.on('result', function(data) {
+                var line = data['line'];
+                if (line) {
+                    // Convert ANSI escape codes to HTML tags using ansi_up library (https://github.com/drudru/ansi_up)
+                    var ansi_up = new AnsiUp;
+                    var html_line = ansi_up.ansi_to_html(line);
+                    // Append the result line to the output element
+                    output.innerHTML += html_line + '<br>';
+                }
+            });
+            socket.on('errorlog', function(data) {
+                var line = data['line'];
+                if (line) {
+                    // Convert ANSI escape codes to HTML tags using ansi_up library (https://github.com/drudru/ansi_up)
+                    var ansi_up = new AnsiUp;
+                    var html_line = ansi_up.ansi_to_html(line);
+                    // Append the result line to the output element
+                    errorlog.innerHTML += html_line + '<br>';
+                }
+            });
+        </script>
 
-        // Listen for form submit event
-        form.addEventListener('submit', function(event) {
-            event.preventDefault();
-            $("#output").html("")
-            $("#errorlog").html("")
-            var command = input.value;
-            if (command) {
-                // Send the command to the server
-                socket.emit('submit', {command: command,tools:getToolValues()});
-                // Clear the input field
-                input.value = '';
-            }
-        });
-
-
-        // Listen for result event from the server
-        socket.on('result', function(data) {
-            var line = data['line'];
-            if (line) {
-                // Convert ANSI escape codes to HTML tags using ansi_up library (https://github.com/drudru/ansi_up)
-                var ansi_up = new AnsiUp;
-                var html_line = ansi_up.ansi_to_html(line);
-                // Append the result line to the output element
-                output.innerHTML += html_line + '<br>';
-            }
-        });
-        socket.on('errorlog', function(data) {
-            var line = data['line'];
-            if (line) {
-                // Convert ANSI escape codes to HTML tags using ansi_up library (https://github.com/drudru/ansi_up)
-                var ansi_up = new AnsiUp;
-                var html_line = ansi_up.ansi_to_html(line);
-                // Append the result line to the output element
-                errorlog.innerHTML += html_line + '<br>';
-            }
-        });
-    </script>
-
-</body>
+    </body>
 </html>
