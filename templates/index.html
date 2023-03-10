@@ -12,6 +12,34 @@
                     <input type="text" class="form-control" id="input" placeholder="Enter a command">
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </div>
+                <div class="input-group" id="checkbox_group">
+                        <!-- Checkbox 2 -->
+                        <div class="input-group-text">
+                            <input class="form-check-input" type="checkbox" value="search" id="tool2" checked>
+                            <label class="form-check-label" for="tool2">search</label>
+                        </div>
+                        <!-- Checkbox 1 -->
+                        <div class="input-group-text">
+                            <input class="form-check-input" type="checkbox" value="wolframalpha_tool" id="tool1" checked>
+                            <label class="form-check-label" for="tool1">wolframalpha_tool</label>
+                        </div>
+                        <!-- Checkbox 3 -->
+                        <div class="input-group-text">
+                            <input class="form-check-input" type="checkbox" value="ch_en_translator" id= "tool3" checked>
+                            <label class= "form-check-label" for= "tool3">ch_en_translator</label>
+                        </div>
+                        <!-- Checkbox 4 -->
+                        <div class="input-group-text">
+                            <input class="form-check-input" type="checkbox" value="en_ch_translator" id= "tool4">
+                            <label class= "form-check-label" for= "tool4">ch_en_translator</label>
+                        </div>
+                        <!-- Checkbox 5 -->
+                        <div class="input-group-text">
+                            <input class="form-check-input" type="checkbox" value="calculator" id= "tool5">
+                            <label class= "form-check-label" for= "tool5">calculator</label>
+                        </div>
+                    </div>
+                </form>
             </form>
         </div>
         <h3>程序输出</h1>
@@ -27,6 +55,21 @@
 
     <!-- Custom script -->
     <script>
+        function getToolValues(){
+            var tools = $("#checkbox_group input:checked");
+
+            // Create an array to store the values of the checked checkboxes
+            var toolValues = [];
+
+            // Loop through each checked checkbox and push its value to the array
+            tools.each(function() {
+                toolValues.push($(this).val());
+            });
+
+            // Join the array elements with a comma separator
+            var toolString = toolValues.join(",");
+            return toolString
+        }
         // Get the socket object
         var socket = io.connect();
 
@@ -40,14 +83,16 @@
         form.addEventListener('submit', function(event) {
             event.preventDefault();
             $("#output").html("")
+            $("#errorlog").html("")
             var command = input.value;
             if (command) {
                 // Send the command to the server
-                socket.emit('submit', {command: command});
+                socket.emit('submit', {command: command,tools:getToolValues()});
                 // Clear the input field
                 input.value = '';
             }
         });
+
 
         // Listen for result event from the server
         socket.on('result', function(data) {

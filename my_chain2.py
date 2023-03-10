@@ -197,14 +197,7 @@ wolframalpha_tool = MyWolframAlphaQueryRun(api_wrapper=WolframAlphaAPIWrapper(wo
 import my_translator_tool
 
 
-tools.append(my_serp_api_wrapper._get_serpapi(serpapi_api_key=_env.google_search_api_key))
-#tools.append( my_python_calculator._get_my_llm_math(llm) )
-tools.append(wolframalpha_tool)
-#tools.append(my_translator_tool.en_ch_translator)
-tools.append(my_translator_tool.ch_en_translator)
 
-
-agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,)
 #query="Who is the current leader of Japan? What is the largest prime number that is smaller than their age"
 #query="什么是比特币？它是如何创造出来的？"
 #query="谁发现了苯和氨基酸的分子式？"
@@ -245,10 +238,33 @@ query="人类发现的最大的恒星，按照质量排序的前十名是哪些�
 
 import sys
 if len(sys.argv) > 1:
-     query=sys.argv[1]
+    query=sys.argv[1]
+    if len(sys.argv)>=3:
+        toolsStr=sys.argv[2]
+        for toolStr in toolsStr.split(","):
+            #calculator,search,wolframalpha_tool,ch_en_translator,en_ch_translator
+            if toolStr == "calculator":
+                tools.append( my_python_calculator._get_my_llm_math(llm) )
+            elif toolStr == "wolframalpha_tool":
+                tools.append(wolframalpha_tool)
+            elif toolStr == "en_ch_translator":
+                tools.append(my_translator_tool.en_ch_translator)
+            elif toolStr == "ch_en_translator":
+                tools.append(my_translator_tool.ch_en_translator)
+            elif toolStr == "search":
+                tools.append(my_serp_api_wrapper._get_serpapi(serpapi_api_key=_env.google_search_api_key))
+else:
+    tools.append(my_serp_api_wrapper._get_serpapi(serpapi_api_key=_env.google_search_api_key))
+    #tools.append( my_python_calculator._get_my_llm_math(llm) )
+    tools.append(wolframalpha_tool)
+    #tools.append(my_translator_tool.en_ch_translator)
+    tools.append(my_translator_tool.ch_en_translator)
+
+
 
 
 print(query)
+agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,)
 agent.run(query)
 
 
