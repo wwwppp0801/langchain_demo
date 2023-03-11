@@ -278,6 +278,8 @@ else:
     tools.append(wolframalpha_tool)
     #tools.append(my_translator_tool.en_ch_translator)
     tools.append(my_translator_tool.ch_en_translator)
+    tools.append(my_python_calculator.get_python_coder_tool())
+    query="找寻一张马斯克的图片"
 
 
 
