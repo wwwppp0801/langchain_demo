@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 ### 修改点：
 # * 修改agent的主prompt：format_instructions，重复了一次格式，避免“Action 1:”，“Thought 1:”这样的回复
 # * 修改LLMMathChain的主prompt：强制生成python代码，避免语言模型自行推断
