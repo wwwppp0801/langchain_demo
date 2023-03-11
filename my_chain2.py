@@ -257,8 +257,8 @@ if len(sys.argv) > 1:
             elif toolStr == "python_coder":
                 tools.append(my_python_calculator.get_python_coder_tool())
             elif toolStr.startswith("file_search_tool"):
-                #description :str = "Any question must first use this tool, using the original question as Action Input"
-                description :str = "question inlcude <file> flag,  MUST first use this tool, using the original question as \"Action Input\""
+                description :str = "Any question must first use this tool, using the original question, in original language, as Action Input"
+                #description :str = "question inlcude <file> flag,  MUST first use this tool, using the original question as \"Action Input\""
                 file="./data/PaulGrahamEssays/worked.txt"
                 tokens=toolsStr.split(":")
                 if len(tokens)>=2:
