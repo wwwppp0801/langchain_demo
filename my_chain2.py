@@ -61,6 +61,7 @@ from langchain.agents.mrkl.base import ZeroShotAgent
 from typing import Any, Callable, List, NamedTuple, Optional, Sequence, Tuple
 from langchain.tools.base import BaseTool
 from langchain.callbacks.base import BaseCallbackManager
+from langchain.agents.agent import AgentExecutor
     
 
 class MyZeroShotAgent(ZeroShotAgent):
@@ -127,7 +128,22 @@ Thought:{agent_scratchpad}"""
         input_variables: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> Agent:
-        return ZeroShotAgent.from_llm_and_tools(llm,tools,callback_manager,prefix,suffix,format_instructions,input_variables,**kwargs)
+        ZeroShotAgent._validate_tools(tools)
+        prompt = ZeroShotAgent.create_prompt(
+            tools,
+            prefix=prefix,
+            suffix=suffix,
+            format_instructions=format_instructions,
+            input_variables=input_variables,
+        )
+        llm_chain = LLMChain(
+            llm=llm,
+            prompt=prompt,
+            callback_manager=callback_manager,
+        )
+        tool_names = [tool.name for tool in tools]
+        return MyZeroShotAgent(llm_chain=llm_chain, allowed_tools=tool_names, **kwargs)
+        #return ZeroShotAgent.from_llm_and_tools(llm,tools,callback_manager,prefix,suffix,format_instructions,input_variables,**kwargs)
 
 from langchain.agents.loading import AGENT_TO_CLASS
 AGENT_TO_CLASS["my-zero-shot"]=MyZeroShotAgent
@@ -285,8 +301,16 @@ else:
 
 
 print(query)
-agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,)
-agent.run(query)
+#agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,)
+agent = MyZeroShotAgent.from_llm_and_tools(
+        llm, tools,verbose=True
+        )
+executer = AgentExecutor.from_agent_and_tools(
+        agent=agent,
+        tools=tools,
+        verbose=True,
+    )
+executer.run(query)
 
 
 
