@@ -237,6 +237,7 @@ query="人类发现的最大的恒星，按照质量排序的前十名是哪些�
 #query="A needle 35 mm long rests on a water surface at 20◦C. What force over and above the needle’s weight is required to lift the needle from contact with the water surface? σ = 0.0728m"
 
 import sys
+print(sys.argv)
 if len(sys.argv) > 1:
     query=sys.argv[1]
     if len(sys.argv)>=3:

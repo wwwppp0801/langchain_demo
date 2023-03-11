@@ -121,7 +121,7 @@
                 // 获取FileList对象
                 const files = e.target.files;
                 // 获取第一个文件的文件名
-                const filename = files[0].name;
+                filename = files[0].name;
                 // 打印文件名
                 console.log(filename);
             });
@@ -136,9 +136,9 @@
                 tools.each(function() {
                     if($(this).val()=="file_search_tool" && filename){
                         toolValues.push($(this).val()+":"+filename);
+                    }else{
+                        toolValues.push($(this).val());
                     }
-                    toolValues.push($(this).val());
-                    
                 });
 
                 // Join the array elements with a comma separator
