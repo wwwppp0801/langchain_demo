@@ -61,7 +61,7 @@ def _get_my_llm_math(llm: BaseLLM) -> BaseTool:
 
 def get_python_coder_tool() -> BaseTool:
     name="PythonCoder"
-    description="you can write python code to solve the problem, print the answer"
+    description="you can write python code to solve the problem, print the answer to stdout"
     def extract_code_blocks(string):
         import re
         pattern = r'```(?:python)?\s*(.*?)\s*```' 
@@ -73,10 +73,11 @@ def get_python_coder_tool() -> BaseTool:
         python_executor = PythonREPL()
         #code = code.split("```")[1].strip("\n\t\r ")
         code_blocks=extract_code_blocks(code)
+        
         if len(code_blocks)==0:
             return "no code for "+name+" to resolve the problem"
             #raise NotImplementedError("no code here",code)
-        output = python_executor.run(code_blocks[0])
+        output = python_executor.run("\n".join(code_blocks))
         #print(code)
         #print(output)
         return output
