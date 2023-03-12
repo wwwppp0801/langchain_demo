@@ -61,7 +61,7 @@ def _get_my_llm_math(llm: BaseLLM) -> BaseTool:
 
 def get_python_coder_tool() -> BaseTool:
     name="PythonCoder"
-    description="you can write python code to solve the problem"
+    description="you can write python code to solve the problem, print the answer"
     def extract_code_blocks(string):
         import re
         pattern = r'```(?:python)?\s*(.*?)\s*```' 
