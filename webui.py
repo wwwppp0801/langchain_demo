@@ -56,10 +56,10 @@ def handle_submit(data):
             # 否则，根据是stdout还是stderr来输出数据，并加上前缀以区分
             else:
                 if f == stdout:
-                    socketio.emit('result', {'line': line.decode()})
+                    socketio.emit('result', {'line': line.decode()}, room=request.sid)
                     print (line)
                 if f == stderr:
-                    socketio.emit('errorlog', {'line': line.decode()})
+                    socketio.emit('errorlog', {'line': line.decode()}, room=request.sid)
                     print (line)
     print("end submit")
 #    while True:

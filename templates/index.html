@@ -81,6 +81,7 @@
 
         <!-- Custom script -->
         <script>
+            let page_id=new Date().getTime()+Math.random();
             $("#upload_form").submit(function(e){
                 // 阻止默认行为
                 e.preventDefault();
@@ -162,7 +163,7 @@
                 var command = input.value;
                 if (command) {
                     // Send the command to the server
-                    socket.emit('submit', {command: command,tools:getToolValues()});
+                    socket.emit('submit', {command: command,tools:getToolValues(),page_id});
                     // Clear the input field
                     input.value = '';
                 }

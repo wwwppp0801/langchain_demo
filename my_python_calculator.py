@@ -60,6 +60,8 @@ def _get_my_llm_math(llm: BaseLLM) -> BaseTool:
     )
 
 def get_python_coder_tool() -> BaseTool:
+    name="PythonCoder"
+    description="you can write python code to solve the problem"
     def extract_code_blocks(string):
         import re
         pattern = r'```(?:python)?\s*(.*?)\s*```' 
@@ -72,7 +74,8 @@ def get_python_coder_tool() -> BaseTool:
         #code = code.split("```")[1].strip("\n\t\r ")
         code_blocks=extract_code_blocks(code)
         if len(code_blocks)==0:
-            raise NotImplementedError("no code here",code)
+            return "no code for "+name+" to resolve the problem"
+            #raise NotImplementedError("no code here",code)
         output = python_executor.run(code_blocks[0])
         #print(code)
         #print(output)
@@ -83,8 +86,8 @@ def get_python_coder_tool() -> BaseTool:
         raise NotImplementedError("Tool does not support async")
 
     return Tool(
-        name="PythonCoder",
-        description="you can write python code to solve the problem",
+        name=name,
+        description=description,
         func=run_python_code,
         coroutine=_arun,
     )
