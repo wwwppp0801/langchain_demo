@@ -111,20 +111,21 @@ Thought:{agent_scratchpad}"""
             The string starting with "Action:" and the following string starting
             with "Action Input:" should be separated by a newline.
             """
+
             FINAL_ANSWER_ACTION = "Final Answer:"
             if FINAL_ANSWER_ACTION in llm_output:
                 return "Final Answer", llm_output.split(FINAL_ANSWER_ACTION)[-1].strip()
-            if "final answer" in llm_output:
-                return llm_output
-            if "Final answer" in llm_output:
-                return llm_output
             regex = r"Action:(.*?)\nAction Input:(.*)"
             match = re.search(regex, llm_output, re.DOTALL)
             if not match:
+                if "final answer" in llm_output:
+                    return "Final Answer", llm_output
+                if "Final answer" in llm_output:
+                    return "Final Answer", llm_output
                 raise ValueError(f"Could not parse LLM output: `{llm_output}`")
             action = match.group(1).strip()
-            action_input = match.group(2)
-            return action, action_input.strip("\n").strip(" ").strip('"')
+            action_input = match.group(2).strip("\n").strip(" ").strip('"')
+            return action, action_input
         return get_action_and_input(text)
     @classmethod
     def from_llm_and_tools(
