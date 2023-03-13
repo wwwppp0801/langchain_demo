@@ -118,6 +118,34 @@ for i in range(len(critical_points)):
 ```
 
 '''
+    code='''
+```
+# Let's use Python to solve this problem
+# We can use a loop to iterate through all possible combinations of coins
+# We will start with 0 to 100 10 cent coins and calculate the number of 5 cent coins needed to make 7 yuan
+# We will stop when we find a combination that adds up to 7 yuan
+
+for i in range(101):
+    for j in range(101):
+        if i*10 + j*5 == 700:
+            print("Number of 10 cent coins:", i)
+            print("Number of 5 cent coins:", j)
+            break
+```
+'''
+    code='''
+
+```
+# Round the number of coins to the nearest integer
+num_5_cents = round(sol[x])
+num_10_cents = round(sol[y])
+
+# Print the final answer
+print("Number of 5 cent coins:", num_5_cents)
+print("Number of 10 cent coins:", num_10_cents)
+```
+'''
+
     result=get_python_coder_tool()._run(code)
     
 #    code='''

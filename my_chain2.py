@@ -319,44 +319,17 @@ else:
 
 
 
-
-print(query)
-agent = MyZeroShotAgent.from_llm_and_tools(
-        llm, tools,verbose=True
+if __name__=="__main__":
+    print(query)
+    agent = MyZeroShotAgent.from_llm_and_tools(
+            llm, tools,verbose=True
+            )
+    executer = AgentExecutor.from_agent_and_tools(
+            agent=agent,
+            tools=tools,
+            verbose=True,
         )
-executer = AgentExecutor.from_agent_and_tools(
-        agent=agent,
-        tools=tools,
-        verbose=True,
-    )
-executer.run(query)
+    executer.run(query)
 
 
 
-### expect output:
-out='''
-> Entering new AgentExecutor chain...
-I need to find out who the current leader of Japan is and their age before I can use a calculator to find the largest prime number smaller than their age.
-Action: Search
-Action Input: "current leader of Japan"
-
-Observation: Fumio Kishida
-Thought:Now that I know who the current leader of Japan is, I can search for their age
-Action: Search
-Action Input: "Fumio Kishida age"
-
-
-Observation: 65 years
-Thought:Now that I know the age of Fumio Kishida, I can use a calculator to find the largest prime number smaller than their age
-Action: Calculator
-Action Input: enter "largest prime number smaller than 65"
-
-
-Observation: Answer: 61
-
-Thought:I now know the final answer for the largest prime number smaller than Fumio Kishida's age
-Final Answer: 61
-
-> Finished chain.
-
-'''
