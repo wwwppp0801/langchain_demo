@@ -92,6 +92,39 @@ class MySerpAPIWrapper(SerpAPIWrapper):
             toret = "No good search result found"
         return toret
 
+class ImageSerpAPIWrapper(SerpAPIWrapper):
+    @staticmethod
+    def _process_response(res: dict) -> str:
+        """Process response from SerpAPI."""
+        print("", file=sys.stderr)
+        print("", file=sys.stderr)
+        print("", file=sys.stderr)
+        print(json.dumps(res, indent=4),file=sys.stderr)
+        print("search result keys:"+json.dumps(list(res.keys())))
+        print("", file=sys.stderr)
+        print("", file=sys.stderr)
+        print("", file=sys.stderr)
+        def wrapImgHtml(url:str)->str:
+            return "<img src=\""+url+"\"/>"
+
+        if "error" in res.keys():
+            raise ValueError(f"Got error from SerpAPI: {res['error']}")
+        if "inline_images" in res.keys() :
+            toret = "\n".join(map(lambda r:
+                                   "\n".join([wrapImgHtml(r.get(key, '')) for key in ['original']]),
+                                   res['inline_images'][:3])
+                               )
+
+        elif "knowledge_graph" in res.keys() and "header_images" in res["knowledge_graph"].keys() :
+            toret = "\n".join(map(lambda r:
+                                   "\n".join([wrapImgHtml(r.get(key, '')) for key in ['image']]),
+                                   res['knowledge_graph']['header_images'][:3])
+                               )
+            toret += json.dumps(remove_http_keys(res["knowledge_graph"]))
+        else:
+            toret = "No good search result found"
+        return toret
+
 def _get_serpapi(**kwargs: Any) -> BaseTool:
     return Tool(
         name="Search",
@@ -100,13 +133,25 @@ def _get_serpapi(**kwargs: Any) -> BaseTool:
         coroutine=MySerpAPIWrapper(**kwargs).arun,
     )
 
+def _get_image_search_tool(**kwargs: Any) -> BaseTool:
+    return Tool(
+        name="ImageSearch",
+        description="A image search engine. Useful for when you need to find image urls. Input should be a search query.",
+        func=ImageSerpAPIWrapper(**kwargs).run,
+        coroutine=ImageSerpAPIWrapper(**kwargs).arun,
+    )
+
 if __name__=="__main__":
     import _env
-    tool=_get_serpapi(serpapi_api_key=_env.google_search_api_key)
+    
+    #tool=_get_serpapi(serpapi_api_key=_env.google_search_api_key)
     #res=tool._run("Who discovered the molecular formula of amino acids?")
     
     #res=tool._run("Order of planets by mass")
-    res=tool._run("Jay Chou songs before 2002")
+    #res=tool._run("Jay Chou songs before 2002")
+    
+    tool=_get_image_search_tool(serpapi_api_key=_env.google_search_api_key)
+    res=tool._run("特朗普的图片")
     print(res)
 
 
