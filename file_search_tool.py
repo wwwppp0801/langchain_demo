@@ -85,6 +85,7 @@ class CustomFileSearchTool(BaseTool):
             self.ruff_db.persist()
         #self.ruff_db = Chroma.from_documents(ruff_texts, collection_name="ruff")
         self.ruff = VectorDBQA.from_chain_type(llm=llm, chain_type="stuff", vectorstore=self.ruff_db)
+        #self.ruff = VectorDBQA.from_chain_type(llm=llm, chain_type="map_reduce", vectorstore=self.ruff_db)
     # TODO: this is for backwards compatibility, remove in future
     def __init__(
         self, name: str, description: str, **kwargs: Any
@@ -109,15 +110,15 @@ if __name__ == '__main__':
             #description = "you must use it first, when you need to answer questions about product after sale",
             description = "Any question must first use this tool, using the original question as Action Input",
             )
-    tool.load_from_file("./upload/progit.pdf")
+    #tool.load_from_file("./upload/progit.pdf")
 
     #tool.load_from_file("./data/PaulGrahamEssays/worked.txt")
-    #tool.load_from_file("./data/PaulGrahamEssays/worked.txt")
+    tool.load_from_file("./data/PaulGrahamEssays/worked.txt")
     #result=tool._run("after sale")
     import openai
     openai.log="debug"
-    #result=tool._run("McCarthy means what?")
+    result=tool._run("McCarthy means what?")
     #result=tool._run("who setup Y Combinator")
-    result=tool._run("progit 的作者是谁？如果git pull的时候发生了冲突要怎么解决?")
+    #result=tool._run("progit 的作者是谁？如果git pull的时候发生了冲突要怎么解决?")
     print(result)
 

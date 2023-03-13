@@ -79,6 +79,10 @@ Thought: you should always think about what to do
 Action: the action to take, MUST be one of [{tool_names}]
 Action Input: the input to the action
 Observation: the result of the action
+Thought: you should always think about what to do
+Action: the action to take, MUST be one of [{tool_names}]
+Action Input: the input to the action
+Observation: the result of the action
 ... (this Thought/Action/Action can repeat N times, N>0)
 Thought: I now know the final answer
 Final Answer: the final answer to the original input question
@@ -92,6 +96,11 @@ Final Answer: the final answer to the original input question
 Question: {input}
 Thought:{agent_scratchpad}"""
 
+
+    @property
+    def observation_prefix(self) -> str:
+        """Prefix to append the observation with."""
+        return "Observation:"
 
     def _extract_tool_and_input(self, text: str) -> Optional[Tuple[str, str]]:
         def get_action_and_input(llm_output: str) -> Tuple[str, str]:
@@ -109,7 +118,7 @@ Thought:{agent_scratchpad}"""
                 return llm_output
             if "Final answer" in llm_output:
                 return llm_output
-            regex = r"Action: (.*?)\nAction Input: (.*)"
+            regex = r"Action:(.*?)\nAction Input:(.*)"
             match = re.search(regex, llm_output, re.DOTALL)
             if not match:
                 raise ValueError(f"Could not parse LLM output: `{llm_output}`")
@@ -146,8 +155,6 @@ Thought:{agent_scratchpad}"""
         return MyZeroShotAgent(llm_chain=llm_chain, allowed_tools=tool_names, **kwargs)
         #return ZeroShotAgent.from_llm_and_tools(llm,tools,callback_manager,prefix,suffix,format_instructions,input_variables,**kwargs)
 
-from langchain.agents.loading import AGENT_TO_CLASS
-AGENT_TO_CLASS["my-zero-shot"]=MyZeroShotAgent
 
 
 
@@ -172,6 +179,16 @@ def _get_google_serper(**kwargs: Any) -> BaseTool:
         name="Serper Search",
         func=GoogleSerperAPIWrapper(**kwargs).run,
         description="A low-cost Google Search API. Useful for when you need to answer questions about current events. Input should be a search query.",
+    )
+
+def _get_think_tool(**kwargs: Any) -> BaseTool:
+    def summarize(text:str):
+        ## 不在Observation里填东西，看看会输出啥
+        return "None"
+    return Tool(
+        name="Think",
+        func=summarize,
+        description="when information is too much, you can Infer from existing information.the input must be one of['summarize','thonk','conclude']",
     )
 
 
@@ -273,6 +290,8 @@ if len(sys.argv) > 1:
                 tools.append(my_serp_api_wrapper._get_serpapi(serpapi_api_key=_env.google_search_api_key))
             elif toolStr == "python_coder":
                 tools.append(my_python_calculator.get_python_coder_tool())
+            elif toolStr == "think_tool":
+                tools.append(_get_think_tool())
             elif toolStr.startswith("file_search_tool"):
                 description :str = "Any question must first use this tool, using the original question, in original language, as Action Input"
                 #description :str = "question inlcude <file> flag,  MUST first use this tool, using the original question as \"Action Input\""
@@ -302,7 +321,6 @@ else:
 
 
 print(query)
-#agent = initialize_agent(tools, llm, agent="my-zero-shot", verbose=True,)
 agent = MyZeroShotAgent.from_llm_and_tools(
         llm, tools,verbose=True
         )
