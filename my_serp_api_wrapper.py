@@ -99,13 +99,13 @@ class ImageSerpAPIWrapper(SerpAPIWrapper):
         print("", file=sys.stderr)
         print("", file=sys.stderr)
         print("", file=sys.stderr)
-        print(json.dumps(res, indent=4),file=sys.stderr)
+        #print(json.dumps(res, indent=4),file=sys.stderr)
         print("search result keys:"+json.dumps(list(res.keys())))
         print("", file=sys.stderr)
         print("", file=sys.stderr)
         print("", file=sys.stderr)
         def wrapImgHtml(url:str)->str:
-            return "<img src=\""+url+"\"/>"
+            return "<div class=\"row\"><img src=\""+url+"\"/></div>"
 
         if "error" in res.keys():
             raise ValueError(f"Got error from SerpAPI: {res['error']}")
@@ -120,7 +120,6 @@ class ImageSerpAPIWrapper(SerpAPIWrapper):
                                    "\n".join([wrapImgHtml(r.get(key, '')) for key in ['image']]),
                                    res['knowledge_graph']['header_images'][:3])
                                )
-            toret += json.dumps(remove_http_keys(res["knowledge_graph"]))
         else:
             toret = "No good search result found"
         return toret

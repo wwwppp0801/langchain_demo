@@ -79,10 +79,6 @@ Thought: you should always think about what to do
 Action: the action to take, MUST be one of [{tool_names}]
 Action Input: the input to the action
 Observation: the result of the action
-Thought: you should always think about what to do
-Action: the action to take, MUST be one of [{tool_names}]
-Action Input: the input to the action
-Observation: the result of the action
 ... (this Thought/Action/Action can repeat N times, N>0)
 Thought: I now know the final answer
 Final Answer: the final answer to the original input question
@@ -118,11 +114,12 @@ Thought:{agent_scratchpad}"""
             regex = r"Action:(.*?)\nAction Input:(.*)"
             match = re.search(regex, llm_output, re.DOTALL)
             if not match:
-                if "final answer" in llm_output:
-                    return "Final Answer", llm_output
-                if "Final answer" in llm_output:
-                    return "Final Answer", llm_output
-                raise ValueError(f"Could not parse LLM output: `{llm_output}`")
+                return "Final Answer","<not for sure>" + llm_output
+                #if "final answer" in llm_output:
+                #    return "Final Answer", llm_output
+                #if "Final answer" in llm_output:
+                #    return "Final Answer", llm_output
+                #raise ValueError(f"Could not parse LLM output: `{llm_output}`")
             action = match.group(1).strip()
             action_input = match.group(2).strip("\n").strip(" ").strip('"')
             return action, action_input

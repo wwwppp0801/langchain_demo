@@ -202,6 +202,10 @@
                 var line = data['line'];
                 if (line) {
                     // Convert ANSI escape codes to HTML tags using ansi_up library (https://github.com/drudru/ansi_up)
+                    if(line.indexOf("<img")>=0){
+                        output.innerHTML += line;
+                        return;
+                    }
                     var ansi_up = new AnsiUp;
                     var html_line = ansi_up.ansi_to_html(line);
                     // Append the result line to the output element
