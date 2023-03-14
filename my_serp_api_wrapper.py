@@ -110,16 +110,20 @@ class ImageSerpAPIWrapper(SerpAPIWrapper):
         if "error" in res.keys():
             raise ValueError(f"Got error from SerpAPI: {res['error']}")
         if "inline_images" in res.keys() :
-            toret = "\n".join(map(lambda r:
-                                   "\n".join([wrapImgHtml(r.get(key, '')) for key in ['original']]),
-                                   res['inline_images'][:3])
-                               )
+            #toret = "\n".join(map(lambda r:
+            #                       "\n".join([wrapImgHtml(r.get(key, '')) for key in ['original']]),
+            #                       res['inline_images'][:3])
+            #                   )
+            toret = json.dumps({"images":list(map(lambda r:
+                                   "\n".join([r.get(key, '') for key in ['original']]),
+                                   res['inline_images'][:3]))
+                      })
 
         elif "knowledge_graph" in res.keys() and "header_images" in res["knowledge_graph"].keys() :
-            toret = "\n".join(map(lambda r:
-                                   "\n".join([wrapImgHtml(r.get(key, '')) for key in ['image']]),
-                                   res['knowledge_graph']['header_images'][:3])
-                               )
+            toret = json.dumps({"images":list(map(lambda r:
+                                   "\n".join([r.get(key, '') for key in ['image']]),
+                                   res["knowledge_graph"]['header_images'][:3]))
+                      })
         else:
             toret = "No good search result found"
         return toret

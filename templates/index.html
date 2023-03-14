@@ -54,10 +54,10 @@
                             <input class="form-check-input" type="checkbox" value="file_search_tool" id= "tool7">
                             <label class= "form-check-label" for= "tool7">file_search_tool</label>
                         </div>
-                        <!-- Checkbox 8 -->
+                        <!-- Checkbox 9 -->
                         <div class="input-group-text">
-                            <input class="form-check-input" type="checkbox" value="image_search" id= "tool8" checked>
-                            <label class= "form-check-label" for= "tool8">image_search</label>
+                            <input class="form-check-input" type="checkbox" value="image_search" id= "tool9">
+                            <label class= "form-check-label" for= "tool9">image_search</label>
                         </div>
                     </div>
                 </form>
@@ -210,6 +210,22 @@
                     var html_line = ansi_up.ansi_to_html(line);
                     // Append the result line to the output element
                     output.innerHTML += replaceHeadSpace(html_line) + '<br>';
+                    
+
+
+
+                    let match=null;
+                    if(match=line.match(/{.*}/)){
+                        try{
+                            let json=JSON.parse(match[0]);
+                            if(json.images){
+                                let html=json.images.map(function(url){
+                                    return "<div style='max-width:400px' class=\"row\"><img src=\""+url+"\"/></div>"
+                                }).join("\n")
+                                output.innerHTML+=html;
+                            }
+                        }catch(e){}
+                    }
                 }
             });
             socket.on('errorlog', function(data) {

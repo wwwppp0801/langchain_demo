@@ -11,6 +11,8 @@ from flask_socketio import SocketIO
 
 
 app = Flask(__name__)
+app.config["CACHE_TYPE"]="null"
+app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
 socketio = SocketIO(app)
 
 @app.route("/")
@@ -104,4 +106,4 @@ def download(filename):
 
 if __name__ == "__main__":
      # run the app or the command depending on the arguments
-    app.run(host=_env.host, port=_env.port)
+    app.run(host=_env.host, port=_env.port,debug=True)
