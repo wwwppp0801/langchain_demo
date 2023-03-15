@@ -43,6 +43,8 @@ def test_a_query(command:str,tools="search,python_coder",verbose=True,debug=Fals
     # 创建两个子线程，分别读取stdout和stderr的值，并加到队列中
     t1 = threading.Thread(target=read_stream, args=(process.stdout, q,"stdout"))
     t2 = threading.Thread(target=read_stream, args=(process.stderr, q,"stderr"))
+    t1.daemon=True
+    t2.daemon=True
     t1.start()
     t2.start()
 
@@ -64,6 +66,15 @@ def test_a_query(command:str,tools="search,python_coder",verbose=True,debug=Fals
         # 如果超过了超时时间，终止进程并退出循环
         if time.time() - start_time > timeout:
             process.terminate()
+            process.stdout.close()
+            process.stderr.close()
+            print("进程超时，已终止")
+            t1.join()
+            t2.join()
+            q.put(None)
+
+            # 等待主线程结束
+            t3.join()
             print("进程超时，已终止")
             return "timeout error","".join(result)+"".join(errorlog)
             break
