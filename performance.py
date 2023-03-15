@@ -56,7 +56,7 @@ def get_final_answer(my_string,sub_string="Final Answer:"):
     return result
 
 def get_llm_count(raw_result):
-    sub_string = "Observetion:"
+    sub_string = "Observation:"
     count = raw_result.count(sub_string) # find the last index of sub_string
     return count+1
 
