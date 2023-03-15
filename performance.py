@@ -25,9 +25,12 @@ def test_a_query(command:str,tools="search,python_coder",verbose=True,debug=Fals
 
     # 定义一个函数，用于从流中读取数据并加到队列中
     def read_stream(stream, q,label):
-        for line in stream:
-            q.put([label,line])
-        stream.close()
+        try:
+            for line in stream:
+                q.put([label,line])
+            stream.close()
+        except ValueError:
+            print("read error")
 
     # 定义一个函数，用于从队列中读取数据并处理结果
     def process_queue(q):
