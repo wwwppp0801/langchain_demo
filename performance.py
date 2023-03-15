@@ -2,6 +2,7 @@ import _env
 import subprocess
 import select
 import datetime
+import json
 
 
 def test_a_query(command:str,tools="search,python_coder",verbose=True,debug=False):
@@ -46,10 +47,12 @@ def write_file(s:str,filename:str):
         file.write(s)
         file.close()
 
-def get_final_answer(raw_result):
-    sub_string = "Observetion:"
-    last_index = raw_result.rindex(sub_string) # find the last index of sub_string
-    result = my_string[last_index + len(sub_string):] # slice the string from last index + length of sub_string to the end
+def get_final_answer(my_string,sub_string="Final Answer:"):
+    last_index = my_string.rfind(sub_string) # find the last index of sub_string
+    if last_index == -1: # if sub_string is not found
+        result = my_string # result is the whole string
+    else: # if sub_string is found
+        result = my_string[last_index + len(sub_string):] # slice the string from last 
     return result
 
 def get_llm_count(raw_result):
@@ -107,14 +110,14 @@ if __name__=="__main__":
         row={}
         result,errorlog=test_a_query(query,tools="search,python_coder",debug=True)
         row['query']=query
-        raw['final_result']=get_final_answer(result)
-        raw['llm_count']=get_llm_count(result)
+        row['final_result']=get_final_answer(result)
+        row['llm_count']=get_llm_count(result)
         row['raw_result']=result
         #print(result,errorlog)
         rows.append(row)
         raw_file_str=json.dumps(rows)
         write_file(raw_file_str,filename)
-        break
+        #break
     
 
 
