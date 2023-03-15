@@ -29,14 +29,14 @@ def test_a_query(command:str,tools="search,python_coder",verbose=True,debug=Fals
             # 否则，根据是stdout还是stderr来输出数据，并加上前缀以区分
             else:
                 if f == stdout:
-                    result.append(str(line))
+                    result.append(line.decode())
                     if verbose:
-                        print(str(line))
+                        print(line.decode())
                     
                 if f == stderr:
-                    errorlog.append(str(line))
+                    errorlog.append(line.decode())
                     if debug:
-                        print(str(line))
+                        print(line.decode())
                     
 
     return "\n".join(result) , "\n".join(errorlog)
@@ -104,11 +104,12 @@ if __name__=="__main__":
 
             ]
     rows=[]
-    filename="report"+datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")+".json"
+    tools="search,ch_en_translator,python_coder"
+    filename="report"+datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")+"_"+tools+".json"
     for query in querys:
         print(query)
         row={}
-        result,errorlog=test_a_query(query,tools="search,python_coder",debug=True)
+        result,errorlog=test_a_query(query,tools=tools,debug=True)
         row['query']=query
         row['final_result']=get_final_answer(result)
         row['llm_count']=get_llm_count(result)
