@@ -7,6 +7,12 @@ import time
 import os
 import threading
 import queue
+import re
+
+def ansi_escape(line:str):
+    ansi_esc = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+    return ansi_esc.sub('', line)
+
 
 
 def test_a_query(command:str,tools="search,python_coder",verbose=True,debug=False):
@@ -32,7 +38,7 @@ def test_a_query(command:str,tools="search,python_coder",verbose=True,debug=Fals
             label,line=obj
             #print(line.decode().strip()) # 打印结果
             if label=="stdout":
-                result.append(line.decode())
+                result.append(ansi_escape(line.decode()))
                 if verbose:
                     print(line.decode())
             if label=="stderr":
@@ -76,7 +82,7 @@ def test_a_query(command:str,tools="search,python_coder",verbose=True,debug=Fals
             # 等待主线程结束
             t3.join()
             print("进程超时，已终止")
-            return "timeout error","".join(result)+"".join(errorlog)
+            return "timeout error", ("".join(result)+"".join(errorlog))
             break
         else:
             print("time spent:"+str(time.time() - start_time) )
@@ -167,7 +173,7 @@ if __name__=="__main__":
             "git pull有冲突应该怎么处理？",
             ]
     rows=[]
-    tools="search,ch_en_translator,python_coder"
+    tools="search,python_coder"
     import sys
     if len(sys.argv)>=2:
         tools=sys.argv[1]
