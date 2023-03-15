@@ -105,6 +105,9 @@ if __name__=="__main__":
             ]
     rows=[]
     tools="search,ch_en_translator,python_coder"
+    import sys
+    if len(sys.argv)>=2:
+        tools=sys.argv[1]
     filename="report"+datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")+"_"+tools+".json"
     for query in querys:
         print(query)
