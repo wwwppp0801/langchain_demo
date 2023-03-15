@@ -101,7 +101,13 @@ if __name__=="__main__":
             "The cafeteria had 23 apples. If they used 20 to make lunch and bought 6 more, how many apples do they have?",
             "It takes Amy 4 minutes to climb to the top of a slide. It takes her 1 minute to slide down. The water slide closes in 15 minutes. How many times can she slide before it closes?",
             "A needle 35 mm long rests on a water surface at 20◦C. What force over and above the needle’s weight is required to lift the needle from contact with the water surface? σ = 0.",
-
+            "一个钱包里有100个五分和十分硬币。硬币的总价值是7美元。钱包里有多少个每种硬币？",
+            "There are 100 coins in denominations of 5 cents and 10 cents. The total value of the coin is 7 dollas. How many coins are there each?",
+            "who setup Y Combinator",
+            "Y Combinator的现任ceo是谁",
+            "北京天气",
+            "北京的完整天气，用摄氏度返回",
+            "git pull有冲突应该怎么处理？",
             ]
     rows=[]
     tools="search,ch_en_translator,python_coder"
