@@ -292,6 +292,9 @@ if len(sys.argv) > 1:
                 tools.append(my_python_calculator.get_python_coder_tool())
             elif toolStr == "think_tool":
                 tools.append(_get_think_tool())
+            elif toolStr == "baidu_search":
+                import baidu_search_tool
+                tools.append(baidu_search_tool.get_search_api())
             elif toolStr.startswith("file_search_tool"):
                 description :str = "Any question must first use this tool, using the original question, in original language, as Action Input"
                 #description :str = "question inlcude <file> flag,  MUST first use this tool, using the original question as \"Action Input\""
