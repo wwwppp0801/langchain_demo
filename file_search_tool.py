@@ -113,11 +113,14 @@ if __name__ == '__main__':
     #tool.load_from_file("./upload/progit.pdf")
 
     #tool.load_from_file("./data/PaulGrahamEssays/worked.txt")
-    tool.load_from_file("./data/PaulGrahamEssays/worked.txt")
+    #tool.load_from_file("./data/PaulGrahamEssays/worked.txt")
+    #tool.load_from_file("./upload/射雕utf8.txt")
+    tool.load_from_file("./upload/2022中国大陆薪酬趋势报告-CGP-2022-120页.pdf")
+    result=tool.ruff_db.similarity_search("工资最高的公司")
     #result=tool._run("after sale")
-    import openai
-    openai.log="debug"
-    result=tool._run("McCarthy means what?")
+    #import openai
+    #openai.log="debug"
+    #result=tool._run("郭靖的母亲是谁")
     #result=tool._run("who setup Y Combinator")
     #result=tool._run("progit 的作者是谁？如果git pull的时候发生了冲突要怎么解决?")
     print(result)

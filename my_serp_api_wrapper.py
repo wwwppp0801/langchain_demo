@@ -35,7 +35,7 @@ class MySerpAPIWrapper(SerpAPIWrapper):
         print("", file=sys.stderr)
         print("", file=sys.stderr)
         print("", file=sys.stderr)
-        #print(json.dumps(res), file=sys.stderr)
+        print(json.dumps(res,indent=4), file=sys.stderr)
         print("search result keys:"+json.dumps(list(res.keys())), file=sys.stderr)
         print("", file=sys.stderr)
         print("", file=sys.stderr)
@@ -57,7 +57,7 @@ class MySerpAPIWrapper(SerpAPIWrapper):
         ):
 
             #toret = str(res["answer_box"])
-            toret = json.dumps(remove_http_keys(res["answer_box"]))
+            toret = "json = "+json.dumps(remove_http_keys(res["answer_box"]))
         elif (
             "sports_results" in res.keys()
             and "game_spotlight" in res["sports_results"].keys()
@@ -75,7 +75,7 @@ class MySerpAPIWrapper(SerpAPIWrapper):
                                    "\n".join([r.get(key, '') for key in ['snippet']]),
                                    res['organic_results'][:3])
                                )
-            toret += json.dumps(remove_http_keys(res["knowledge_graph"]))
+            toret += "\njson = "+json.dumps(remove_http_keys(res["knowledge_graph"]))
         elif "snippet" in res["organic_results"][0].keys():
             #toret = res["organic_results"][0]["snippet"]
             toret = " ".join(map(lambda r:
@@ -147,14 +147,14 @@ def _get_image_search_tool(**kwargs: Any) -> BaseTool:
 if __name__=="__main__":
     import _env
     
-    #tool=_get_serpapi(serpapi_api_key=_env.google_search_api_key)
+    tool=_get_serpapi(serpapi_api_key=_env.google_search_api_key)
     #res=tool._run("Who discovered the molecular formula of amino acids?")
     
     #res=tool._run("Order of planets by mass")
-    #res=tool._run("Jay Chou songs before 2002")
+    res=tool._run("Jay Chou songs before 2002")
     
-    tool=_get_image_search_tool(serpapi_api_key=_env.google_search_api_key)
-    res=tool._run("特朗普的图片")
+    #tool=_get_image_search_tool(serpapi_api_key=_env.google_search_api_key)
+    #res=tool._run("特朗普的图片")
     print(res)
 
 

@@ -107,14 +107,15 @@ def test_a_query(command:str,tools="search,python_coder",verbose=True,debug=Fals
     return "".join(result),"".join(errorlog)
     
 
-
 def write_file(s:str,filename:str):
     if s:
         file = open(filename, "w")
         file.write(s)
         file.close()
-        df_json = pd.read_json(filename)
-        df_json.to_excel(filename+'.xlsx')
+        import report.process_json
+        report.process_json.convert_json_to_excel(filename,filename+".xslx")
+        #df_json = pd.read_json(filename)
+        #df_json.to_excel(filename+'.xlsx')
 
 def get_final_answer(my_string,sub_string="Final Answer:"):
     last_index = my_string.rfind(sub_string) # find the last index of sub_string
