@@ -24,6 +24,7 @@ def convert_json_to_excel(input_file, output_file):
     #green_fill = PatternFill(bgColor="C6EFCE")
 
 
+    validate_result_col=None
     # 遍历第一行的所有单元格
     for cell in ws[1]:
         # 如果单元格的值为“validate_result”，则获取该单元格的列索引
@@ -37,18 +38,19 @@ def convert_json_to_excel(input_file, output_file):
     #falseFill = PatternFill(bgColor="C6EFCE")
 
     # 遍历行
-    for row in ws.rows:
-        # 获取validate_result列的值
-        validate_result = row[validate_result_col - 1].value
+    if validate_result_col:
+        for row in ws.rows:
+            # 获取validate_result列的值
+            validate_result = row[validate_result_col - 1].value
 
-        # 如果validate_result为TRUE，则将整行的背景设置为绿色
-        if str(validate_result).lower() == 'true':
-            for cell in row:
-                cell.fill = trueFill
-        # 如果validate_result为FALSE，则将整行的背景设置为红色
-        elif str(validate_result).lower() == 'false':
-            for cell in row:
-                cell.fill = falseFill
+            # 如果validate_result为TRUE，则将整行的背景设置为绿色
+            if str(validate_result).lower() == 'true':
+                for cell in row:
+                    cell.fill = trueFill
+            # 如果validate_result为FALSE，则将整行的背景设置为红色
+            elif str(validate_result).lower() == 'false':
+                for cell in row:
+                    cell.fill = falseFill
 
     wb.save(output_file)
 

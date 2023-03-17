@@ -113,7 +113,8 @@ def write_file(s:str,filename:str):
         file.write(s)
         file.close()
         import report.process_json
-        report.process_json.convert_json_to_excel(filename,filename+".xslx")
+        report.process_json.convert_json_to_excel(filename,filename+".xlsx")
+        #subprocess.Popen([_env.python_path ,"-u","report/process_json.py", filename ])
         #df_json = pd.read_json(filename)
         #df_json.to_excel(filename+'.xlsx')
 
@@ -195,7 +196,9 @@ if __name__=="__main__":
     import sys
     if len(sys.argv)>=2:
         tools=sys.argv[1]
-    filename="report"+datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")+"_"+tools+".json"
+    filename="report"+datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")+"_"+tools+".json"
+    print('{"json_filename":"'+filename+'"}')
+    print('{"excel_filename":"'+filename+'.xlsx"}')
     for case in testcases:
         query=case["query"]
         print(query)
