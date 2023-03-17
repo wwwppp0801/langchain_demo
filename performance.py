@@ -89,8 +89,8 @@ def test_a_query(command:str,tools="search,python_coder",verbose=True,debug=Fals
             print("进程超时，已终止")
             return "timeout error", ("".join(result)+"".join(errorlog))
             break
-        else:
-            print("time spent:"+str(time.time() - start_time) )
+#        else:
+#            print("time spent:"+str(time.time() - start_time) )
         time.sleep(1)
 
     # 等待进程结束，并关闭所有流
