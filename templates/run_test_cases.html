@@ -68,6 +68,21 @@
                     </div>
                 </form>
             </div>
+            <div class="row mb-1">
+                 参考样例: <a href="download/test_case.json" target="_blank" class="link">默认的test_case.json</a>&nbsp;
+            </div>
+            <div class="row mb-1">
+                <form id="upload_form" method="post" action="/upload" enctype="multipart/form-data">
+                    <!-- 添加一个文件选择元素 -->
+                    <input type="file" name="file" id="file">
+                    <!-- 添加一个隐藏的input元素，用来存储文件名 -->
+                    <input type="hidden" name="filename" id="filename">
+                    <!-- 添加一个提交按钮 -->
+                    <input type="submit" value="Upload">
+                </form>
+                <!-- 显示上传结果 -->
+                <div id="result"></div>
+            </div>
 
             <h3>程序输出</h1>
             <div id="output" class="well"></div>
@@ -86,6 +101,50 @@
         <!-- Custom script -->
         <script>
             let page_id=new Date().getTime()+Math.random();
+            $("#upload_form").submit(function(e){
+                // 阻止默认行为
+                e.preventDefault();
+                // 获取表单中的文件对象
+                var file = $("#file")[0].files[0];
+                // 检查文件是否存在并且合法
+                if (file && file.name) {
+                    // 创建一个FormData对象
+                    var formData = new FormData();
+                    // 将文件添加到FormData对象中
+                    formData.append("file", file);
+                    // 将文件名添加到FormData对象中
+                    formData.append("filename", file.name);
+                    // 使用ajax()方法发送请求到服务器端
+                    $.ajax({
+                        url: "/upload",
+                        type: "POST",
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function(data) {
+                            // 如果成功，显示返回的信息
+                            $("#result").html(data);
+                        },
+                        error: function(xhr, status, error) {
+                            // 如果失败，显示错误信息
+                            $("#result").html(error);
+                        }
+                    });
+                } else {
+                    // 如果没有选择或者无效的文件，显示错误信息
+                    $("#result").html("<p>No file selected or invalid file.</p>");
+                }
+            });
+            let filename="";
+            // 监听onchange事件
+            $("#file").change((e) => {
+                // 获取FileList对象
+                const files = e.target.files;
+                // 获取第一个文件的文件名
+                filename = files[0].name;
+                // 打印文件名
+                console.log(filename);
+            });
             
             function getToolValues(){
                 var tools = $("#checkbox_group input:checked");
@@ -117,7 +176,7 @@
                 $("#output").html("")
                 $("#errorlog").html("")
                 // Send the command to the server
-                socket.emit('run_test_cases', {tools:getToolValues(),page_id});
+                socket.emit('run_test_cases', {tools:getToolValues(),page_id,filename:filename});
                 // Clear the input field
             });
 
@@ -146,7 +205,7 @@
                     var ansi_up = new AnsiUp;
                     var html_line = ansi_up.ansi_to_html(line);
                     // Append the result line to the output element
-                    output.innerHTML += replaceHeadSpace(html_line) + '<br>';
+                    $(output).append(replaceHeadSpace(html_line) + "<br>");
                     
 
 
@@ -159,15 +218,15 @@
                                 let html=json.images.map(function(url){
                                     return "<div style='max-width:400px' class=\"row\"><img src=\""+url+"\"/></div>"
                                 }).join("\n")
-                                output.innerHTML+=html;
+                                $(output).append(html);
                             }
                             if(json.excel_filename){
                                 let html= "<div style='max-width:400px' class=\"row\"><a target='_blank' href=\"report/"+json.excel_filename+"\">"+json.excel_filename+"</a></div>";
-                                output.innerHTML+=html;
+                                $(output).append(html);
                             }
                             if(json.json_filename){
                                 let html= "<div style='max-width:400px' class=\"row\"><a target='_blank' href=\"report/"+json.json_filename+"\">"+json.json_filename+"</a></div>";
-                                output.innerHTML+=html;
+                                $(output).append(html);
                             }
                         }catch(e){}
                     }

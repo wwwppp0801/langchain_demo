@@ -209,14 +209,10 @@
                 var line = data['line'];
                 if (line) {
                     // Convert ANSI escape codes to HTML tags using ansi_up library (https://github.com/drudru/ansi_up)
-                    if(line.indexOf("<img")>=0){
-                        output.innerHTML += line;
-                        return;
-                    }
                     var ansi_up = new AnsiUp;
                     var html_line = ansi_up.ansi_to_html(line);
                     // Append the result line to the output element
-                    output.innerHTML += replaceHeadSpace(html_line) + '<br>';
+                    $(output).append(replaceHeadSpace(html_line) + "<br>");
                     
 
 
@@ -229,7 +225,7 @@
                                 let html=json.images.map(function(url){
                                     return "<div style='max-width:400px' class=\"row\"><img src=\""+url+"\"/></div>"
                                 }).join("\n")
-                                output.innerHTML+=html;
+                                $(output).append(html);
                             }
                         }catch(e){}
                     }

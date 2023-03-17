@@ -128,8 +128,12 @@ def run_test_cases_index():
 @socketio.on('run_test_cases')
 def run_test_cases(data):
     tools = data['tools']
+    filename = data['filename']
+    if filename!='':
+        filename="./upload/"+filename
+        
     print(data)
-    process = subprocess.Popen([_env.python_path ,"-u","performance.py", tools], stdout=subprocess.PIPE, stderr=subprocess.PIPE , bufsize=0)
+    process = subprocess.Popen([_env.python_path ,"-u","performance.py", tools,filename], stdout=subprocess.PIPE, stderr=subprocess.PIPE , bufsize=0)
     # 创建一个空集合，用于存放已经结束的文件对象
     stdout = process.stdout
     stderr = process.stderr
