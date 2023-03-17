@@ -52,6 +52,17 @@ def _convert_json_to_excel(input_file, output_file):
                 for cell in row:
                     cell.fill = falseFill
 
+    # 遍历第一行单元格，找到raw_result所在的列号
+    for cell in ws[1]:
+        if cell.value == "raw_result":
+            ws.column_dimensions[cell.column_letter].width = 80
+        if cell.value == "final_result":
+            ws.column_dimensions[cell.column_letter].width = 30
+        if cell.value == "validator":
+            ws.column_dimensions[cell.column_letter].width = 20
+
+
+
     wb.save(output_file)
 
 import traceback
