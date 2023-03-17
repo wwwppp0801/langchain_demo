@@ -147,7 +147,7 @@ if __name__=="__main__":
     testcase_filename="upload/test_case.json"
     if len(sys.argv)>=2:
         tools=sys.argv[1]
-        if len(sys.argv)>=3:
+        if len(sys.argv)>=3 and sys.argv[2]!="":
             testcase_filename=sys.argv[2]
 
 
