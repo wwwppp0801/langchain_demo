@@ -32,6 +32,8 @@ pip3 install 'git+https://github.com/facebookresearch/detectron2.git'
 
 pip3 install libmagic $suffix
 pip3 install chromadb $suffix
+pip3 install filetype $suffix
+pip3 install termcolor $suffix
 
 os=$(uname -s)
 if [ "$os" = "Linux" ]; then
