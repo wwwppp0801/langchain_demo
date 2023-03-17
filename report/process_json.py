@@ -54,12 +54,13 @@ def _convert_json_to_excel(input_file, output_file):
 
     wb.save(output_file)
 
+import traceback
 
 def convert_json_to_excel(input_file,output_file):
     try:
         return _convert_json_to_excel(input_file,output_file)
-    except:
-        print("convert excel error:"+input_file)
+    except Exception as e:
+        traceback.print_exc()
         return None
 
 def traverse_directory(directory):

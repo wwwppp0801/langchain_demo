@@ -32,6 +32,7 @@ def search(word:str)->str:
     #print(json.dumps(data['data']['tplData']['asResult'],indent=4,ensure_ascii=False))
     print(json.dumps(data['data']['tplData']['asResult']['item'][0],indent=4,ensure_ascii=False),file=sys.stderr)
     ret=extract_strings(data['data']['tplData']['asResult'])
+    ret = re.sub("[\u0001\u0002\u0003\u0004\u0005]", "", ret)
     print(ret[:800],file=sys.stderr)
     return ret[:800]
 
