@@ -22,6 +22,7 @@ pip3 install flask_socketio  $suffix
 
 #performance.sh依赖
 pip3 install pandas $suffix
+pip3 install openpyxl $suffix
 
 
 # 文件搜索依赖
