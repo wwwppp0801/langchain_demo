@@ -7,11 +7,17 @@
     </head>
     <body>
         <div class="container">
-            <div class="row mt-5">
+            <header class="d-flex py-3">
+                <ul class="nav nav-pills">
+                    <li class="nav-item"><a href="/" class="nav-link" aria-current="page">langchain</a></li>
+                    <li class="nav-item"><a href="/run_test_cases" class="nav-link active">run_test_cases</a></li>
+                    <li class="nav-item"><a href="/file_question" class="nav-link">file_question</a></li>
+                </ul>
+            </header>
+            <div class="row mt-1">
                 <form id="form" action="#">
                     <div class="form-group col-md-10 d-flex align-items-center">
                         <button type="submit" class="btn btn-primary">Run Test Cases</button>
-                        <a href="/" class="btn btn-primary">index</a>
                     </div>
                     <div class="input-group" id="checkbox_group">
                         <!-- Checkbox 2 -->

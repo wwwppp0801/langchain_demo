@@ -9,73 +9,22 @@
         <div class="container">
             <header class="d-flex py-3">
                 <ul class="nav nav-pills">
-                    <li class="nav-item"><a href="/" class="nav-link active" aria-current="page">langchain</a></li>
+                    <li class="nav-item"><a href="/" class="nav-link" aria-current="page">langchain</a></li>
                     <li class="nav-item"><a href="/run_test_cases" class="nav-link">run_test_cases</a></li>
-                    <li class="nav-item"><a href="/file_question" class="nav-link">file_question</a></li>
+                    <li class="nav-item"><a href="/file_question" class="nav-link active">file_question</a></li>
                 </ul>
             </header>
             <div class="row mt-1">
                 <form id="form" action="#">
                     <div class="form-group col-md-10 d-flex align-items-center">
-                        <input type="text" class="form-control" id="input" placeholder="Enter a command">
+                        <input type="text" class="form-control" id="input" placeholder="Enter a question">
                         <button type="submit" class="btn btn-primary">Submit</button>
-                    </div>
-                    <div class="input-group" id="checkbox_group">
-                        <!-- Checkbox 2 -->
-                        <div class="input-group-text">
-                            <input class="form-check-input" type="checkbox" value="search" id="tool2" checked>
-                            <label class="form-check-label" for="tool2">search</label>
-                        </div>
-                        <!-- Checkbox 1 -->
-                        <div class="input-group-text">
-                            <input class="form-check-input" type="checkbox" value="wolframalpha_tool" id="tool1" checked>
-                            <label class="form-check-label" for="tool1">wolframalpha_tool</label>
-                        </div>
-                        <!-- Checkbox 3 -->
-                        <div class="input-group-text">
-                            <input class="form-check-input" type="checkbox" value="ch_en_translator" id= "tool3">
-                            <label class= "form-check-label" for= "tool3">ch_en_translator</label>
-                        </div>
-                        <!-- Checkbox 4 -->
-                        <div class="input-group-text">
-                            <input class="form-check-input" type="checkbox" value="en_ch_translator" id= "tool4">
-                            <label class= "form-check-label" for= "tool4">en_ch_translator</label>
-                        </div>
-                        <!-- Checkbox 5 -->
-                        <div class="input-group-text">
-                            <input class="form-check-input" type="checkbox" value="calculator" id= "tool5">
-                            <label class= "form-check-label" for= "tool5">calculator</label>
-                        </div>
-                        <!-- Checkbox 6 -->
-                        <div class="input-group-text">
-                            <input class="form-check-input" type="checkbox" value="python_coder" id= "tool6" checked>
-                            <label class= "form-check-label" for= "tool6">python_coder</label>
-                        </div>
-
-                        <!-- Checkbox 8 -->
-                        <div class="input-group-text">
-                            <input class="form-check-input" type="checkbox" value="think_tool" id= "tool8">
-                            <label class= "form-check-label" for= "tool8">think_tool</label>
-                        </div>
-                        <!-- Checkbox 7 -->
-                        <div class="input-group-text">
-                            <input class="form-check-input" type="checkbox" value="file_search_tool" id= "tool7">
-                            <label class= "form-check-label" for= "tool7">file_search_tool</label>
-                        </div>
-                        <!-- Checkbox 9 -->
-                        <div class="input-group-text">
-                            <input class="form-check-input" type="checkbox" value="image_search" id= "tool9">
-                            <label class= "form-check-label" for= "tool9">image_search</label>
-                        </div>
-                        <!-- Checkbox 10 -->
-                        <div class="input-group-text">
-                            <input class="form-check-input" type="checkbox" value="baidu_search" id= "tool10" checked>
-                            <label class= "form-check-label" for= "tool10">baidu_search</label>
-                        </div>
                     </div>
                 </form>
             </div>
-
+            <div class="row mb-1">
+                 默认提问文件: <a href="download/worked.txt" target="_blank" class="link">worked.txt</a>&nbsp;
+            </div>
             <div class="row mb-1">
                 <form id="upload_form" method="post" action="/upload" enctype="multipart/form-data">
                     <!-- 添加一个文件选择元素 -->
@@ -140,7 +89,7 @@
                     $("#result").html("<p>No file selected or invalid file.</p>");
                 }
             });
-            let filename="";
+            let filename="worked.txt";
             // 监听onchange事件
             $("#file").change((e) => {
                 // 获取FileList对象
@@ -151,25 +100,6 @@
                 console.log(filename);
             });
             
-            function getToolValues(){
-                var tools = $("#checkbox_group input:checked");
-
-                // Create an array to store the values of the checked checkboxes
-                var toolValues = [];
-
-                // Loop through each checked checkbox and push its value to the array
-                tools.each(function() {
-                    if($(this).val()=="file_search_tool" && filename){
-                        toolValues.push($(this).val()+":"+filename);
-                    }else{
-                        toolValues.push($(this).val());
-                    }
-                });
-
-                // Join the array elements with a comma separator
-                var toolString = toolValues.join(",");
-                return toolString
-            }
             // Get the socket object
             var socket = io.connect();
 
@@ -184,11 +114,10 @@
                 event.preventDefault();
                 $("#output").html("")
                 $("#errorlog").html("")
-                var command = input.value;
-                if (command) {
-                    // Send the command to the server
-                    socket.emit('submit', {command: command,tools:getToolValues(),page_id});
-                    // Clear the input field
+
+                let question = input.value;
+                if (question) {
+                    socket.emit('file_question', {page_id:page_id,question:question,filename:filename});
                     input.value = '';
                 }
             });
@@ -233,6 +162,14 @@
                                 }).join("\n")
                                 $(output).append(html);
                             }
+                            if(json.excel_filename){
+                                let html= "<div style='max-width:400px' class=\"row\"><a target='_blank' href=\"report/"+json.excel_filename+"\">"+json.excel_filename+"</a></div>";
+                                $(output).append(html);
+                            }
+                            if(json.json_filename){
+                                let html= "<div style='max-width:400px' class=\"row\"><a target='_blank' href=\"report/"+json.json_filename+"\">"+json.json_filename+"</a></div>";
+                                $(output).append(html);
+                            }
                         }catch(e){}
                     }
                 }
@@ -251,3 +188,4 @@
 
     </body>
 </html>
+
