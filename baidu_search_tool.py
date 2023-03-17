@@ -5,6 +5,7 @@ from langchain.agents.tools import Tool
 import sys
 import json
 import requests
+import re
     
 
 def extract_strings(d):
