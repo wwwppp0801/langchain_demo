@@ -87,7 +87,7 @@ def test_a_query(command:str,tools="search,python_coder",verbose=True,debug=Fals
             # 等待主线程结束
             t3.join()
             print("进程超时，已终止")
-            return "timeout error", ("".join(result)+"".join(errorlog))
+            return "timeout error", "".join(result)
             break
 #        else:
 #            print("time spent:"+str(time.time() - start_time) )
@@ -170,6 +170,8 @@ if __name__=="__main__":
         row['final_result']=get_final_answer(result)
         row['llm_count']=get_llm_count(result)
         row['raw_result']=result
+        if result=="timeout error":
+            row['raw_result']=errorlog
         if "validator" in case:
             row['validator']=case["validator"]
             row['validate_result']=validate(row['final_result'],case["validator"])
