@@ -6,7 +6,7 @@ from openpyxl.utils import get_column_letter
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.styles import Alignment
 
-def convert_json_to_excel(input_file, output_file):
+def _convert_json_to_excel(input_file, output_file):
     df = pd.read_json(input_file)
     wb = Workbook()
     ws = wb.active
@@ -53,6 +53,14 @@ def convert_json_to_excel(input_file, output_file):
                     cell.fill = falseFill
 
     wb.save(output_file)
+
+
+def convert_json_to_excel(input_file,output_file):
+    try:
+        return _convert_json_to_excel(input_file,output_file)
+    except:
+        print("convert excel error:"+input_file)
+        return None
 
 def traverse_directory(directory):
     for root, dirs, files in os.walk(directory):

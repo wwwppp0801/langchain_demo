@@ -9,6 +9,7 @@ import threading
 import queue
 import re
 import pandas as pd
+import sys
 
 def ansi_escape(line:str):
     ansi_esc = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
@@ -48,7 +49,7 @@ def test_a_query(command:str,tools="search,python_coder",verbose=True,debug=Fals
             if label=="stderr":
                 errorlog.append(line.decode())
                 if debug:
-                    print(line.decode())
+                    print(line.decode(),file=sys.stderr)
             q.task_done()
     # 创建两个子线程，分别读取stdout和stderr的值，并加到队列中
     t1 = threading.Thread(target=read_stream, args=(process.stdout, q,"stdout"))
@@ -203,7 +204,7 @@ if __name__=="__main__":
         query=case["query"]
         print(query)
         row={}
-        result,errorlog=test_a_query(query,tools=tools,debug=True)
+        result,errorlog=test_a_query(query,tools=tools,debug=False)
         row['query']=query
         row['final_result']=get_final_answer(result)
         row['llm_count']=get_llm_count(result)

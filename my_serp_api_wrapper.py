@@ -32,14 +32,14 @@ class MySerpAPIWrapper(SerpAPIWrapper):
     @staticmethod
     def _process_response(res: dict) -> str:
         """Process response from SerpAPI."""
-        print("", file=sys.stderr)
-        print("", file=sys.stderr)
-        print("", file=sys.stderr)
-        print(json.dumps(res,indent=4), file=sys.stderr)
-        print("search result keys:"+json.dumps(list(res.keys())), file=sys.stderr)
-        print("", file=sys.stderr)
-        print("", file=sys.stderr)
-        print("", file=sys.stderr)
+        #print("", file=sys.stderr)
+        #print("", file=sys.stderr)
+        #print("", file=sys.stderr)
+        #print(json.dumps(res,indent=4), file=sys.stderr)
+        #print("search result keys:"+json.dumps(list(res.keys())), file=sys.stderr)
+        #print("", file=sys.stderr)
+        #print("", file=sys.stderr)
+        #print("", file=sys.stderr)
         if "error" in res.keys():
             raise ValueError(f"Got error from SerpAPI: {res['error']}")
         if "answer_box" in res.keys() and "answer" in res["answer_box"].keys():
@@ -96,14 +96,14 @@ class ImageSerpAPIWrapper(SerpAPIWrapper):
     @staticmethod
     def _process_response(res: dict) -> str:
         """Process response from SerpAPI."""
-        print("", file=sys.stderr)
-        print("", file=sys.stderr)
-        print("", file=sys.stderr)
-        #print(json.dumps(res, indent=4),file=sys.stderr)
-        print("search result keys:"+json.dumps(list(res.keys())), file=sys.stderr)
-        print("", file=sys.stderr)
-        print("", file=sys.stderr)
-        print("", file=sys.stderr)
+        #print("", file=sys.stderr)
+        #print("", file=sys.stderr)
+        #print("", file=sys.stderr)
+        ##print(json.dumps(res, indent=4),file=sys.stderr)
+        #print("search result keys:"+json.dumps(list(res.keys())), file=sys.stderr)
+        #print("", file=sys.stderr)
+        #print("", file=sys.stderr)
+        #print("", file=sys.stderr)
         def wrapImgHtml(url:str)->str:
             return "<div class=\"row\"><img src=\""+url+"\"/></div>"
 

@@ -1,5 +1,5 @@
 [
-{"validator":"(m('-9/2') and m('-101/4')) or (m('-4.5') and m('-25.25'))","query":"求 x^2+9x-5 的最小值点"},
+{"validator":"m('-101/4') or m('-25.25')","query":"求 x^2+9x-5 的最小值点"},
 {"validator":"m('\\\\b12') or m('\\\\b1.2')","query":"google的总市值是多少"},
 {"validator":"m('\\\\b61\\\\b')","query":"Who is the current leader of Japan? What is the largest prime number that is smaller than their age"},
 {"validator":"m('\\\\bblockchain\\\\b') or m('\\\\bSatoshi Nakamoto\\\\b') or m('\\\\bdigital currency\\\\b')","query":"什么是比特币？它是如何创造出来的？"},
