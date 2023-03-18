@@ -1,3 +1,6 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 import _env
 from langchain.chains.llm_math.base import LLMMathChain
 from langchain.llms.base import BaseLLM

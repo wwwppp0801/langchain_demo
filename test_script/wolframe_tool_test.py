@@ -1,3 +1,6 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 import _env
 from langchain.tools.wolfram_alpha.tool import WolframAlphaQueryRun
 from langchain.utilities.wolfram_alpha import WolframAlphaAPIWrapper
