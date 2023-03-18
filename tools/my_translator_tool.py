@@ -4,11 +4,10 @@ from langchain.agents.tools import Tool
 import requests # 导入requests模块
 import hashlib # 导入hashlib模块
 import random # 导入random模块
-import _env
 import time
 
 
-def trans(text:str,_from:str ="zh", _to:str="en"):
+def trans(text:str,_from:str ="zh", _to:str="en",baidu_trans_app_id:str="",baidu_trans_secret_key:str=""):
     text=text.strip(" \t\n\"\'“”‘’")
     # 定义要翻译的源语言和目标语言
     from_lang = _from # 中文
@@ -18,8 +17,8 @@ def trans(text:str,_from:str ="zh", _to:str="en"):
     url = "http://api.fanyi.baidu.com/api/trans/vip/translate"
 
     # 定义APP ID和密钥（替换为自己申请的）
-    app_id = _env.baidu_trans_app_id
-    secret_key = _env.baidu_trans_secret_key
+    app_id = baidu_trans_app_id
+    secret_key = baidu_trans_secret_key
 
     # 生成随机数
     salt = random.randint(32768, 65536)
@@ -74,17 +73,24 @@ class TranslatorTool(BaseTool):
             name=name, func=func, description=description, **kwargs
         )
 
-def ch_en_trans(text:str):
-    return trans(text,_from="zh",_to="en")
-def en_ch_trans(text:str):
-    return trans(text,_from="en",_to="zh")
 
-ch_en_translator= TranslatorTool(
-        name="ChEnTranslator",
-        description="A tool that can translate Chinese to English",
-        func=ch_en_trans,
-        )
-en_ch_translator= TranslatorTool(
+def ch_en_translator(baidu_trans_app_id,baidu_trans_secret_key):
+
+    def ch_en_trans(text:str):
+        return trans(text,_from="zh",_to="en",
+                     baidu_trans_app_id=baidu_trans_app_id,
+                     baidu_trans_secret_key=baidu_trans_secret_key)
+    return TranslatorTool(
+            name="ChEnTranslator",
+            description="A tool that can translate Chinese to English",
+            func=ch_en_trans,
+            )
+def en_ch_translator(baidu_trans_app_id,baidu_trans_secret_key): 
+    def en_ch_trans(text:str):
+        return trans(text,_from="en",_to="zh",
+                     baidu_trans_app_id=baidu_trans_app_id,
+                     baidu_trans_secret_key=baidu_trans_secret_key)
+    return TranslatorTool(
         name="EnChTranslator",
         description="A tool that can translate English to Chinese ",
         func=en_ch_trans,
@@ -93,6 +99,14 @@ en_ch_translator= TranslatorTool(
 if __name__ == "__main__":
     # 定义要翻译的文本
     text = "使用python语言，调用百度提供的翻译api，把中文翻译成英文"
-    print(trans(text))
-    print(ch_en_translator._run(text))
-    print(en_ch_translator._run(text))
+    import sys
+    import os
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+    import _env
+    print(trans(text,
+                baidu_trans_app_id=_env.baidu_trans_app_id,
+                baidu_trans_secret_key=_env.baidu_trans_secret_key))
+    print(ch_en_translator(baidu_trans_app_id=_env.baidu_trans_app_id,
+                baidu_trans_secret_key=_env.baidu_trans_secret_key)._run(text))
+    print(en_ch_translator(baidu_trans_app_id=_env.baidu_trans_app_id,
+                baidu_trans_secret_key=_env.baidu_trans_secret_key)._run(text))

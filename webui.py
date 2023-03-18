@@ -100,13 +100,8 @@ def download(filename):
 @app.route("/report/<filename>")
 def report(filename):
     # 从指定目录发送文件给客户端
-    if (os.path.isfile(filename) and filename.find('/')==-1 and  filename.find('..')== -1 and 
-        (filename.endswith(".json") or filename.endswith(".xlsx")) and 
-        filename.startswith("report")
-        ):
-        return flask.send_from_directory(current_dir, filename)
-    else:
-        return "<p>No report file "+ filename +" .</p>"
+    return flask.send_from_directory(current_dir+"/report/", filename)
+
 
 
 

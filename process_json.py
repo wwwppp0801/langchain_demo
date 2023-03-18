@@ -93,7 +93,7 @@ if __name__=="__main__":
         else:
             print("error:"+path+" is not file or dir")
     else:
-        traverse_directory('.')
+        traverse_directory('report')
 
 
 

@@ -1,4 +1,4 @@
-import _env
+import sys
 import subprocess
 from langchain.agents.tools import Tool
 from langchain.chains.llm_math.base import LLMMathChain
@@ -61,7 +61,7 @@ def _get_my_llm_math(llm: BaseLLM) -> BaseTool:
         coroutine=MyLLMMathChain(llm=llm, callback_manager=llm.callback_manager).arun,
     )
 
-def get_python_coder_tool() -> BaseTool:
+def get_python_coder_tool(python_path:str) -> BaseTool:
     name="PythonCoder"
     description="you can write python code to solve the problem,you must write, you must write a complete python program , print the answer to stdout"
     def extract_code_blocks(string):
@@ -81,7 +81,7 @@ def get_python_coder_tool() -> BaseTool:
             return "no code for "+name+" to resolve the problem"
             #raise NotImplementedError("no code here",code)
         code_str="\n".join(code_blocks)
-        p = subprocess.Popen([_env.python_path, '-c', code_str], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen([python_path, '-c', code_str], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
         output = out.decode() + err.decode()
         return output
@@ -97,6 +97,10 @@ def get_python_coder_tool() -> BaseTool:
         coroutine=_arun,
     )
 if __name__=="__main__":
+    import sys
+    import os
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+    import _env
     code='''
 ```
 
@@ -133,20 +137,20 @@ for i in range(101):
             break
 ```
 '''
-    code='''
+#    code='''
+#
+#```
+## Round the number of coins to the nearest integer
+#num_5_cents = round(sol[x])
+#num_10_cents = round(sol[y])
+#
+## Print the final answer
+#print("Number of 5 cent coins:", num_5_cents)
+#print("Number of 10 cent coins:", num_10_cents)
+#```
+#'''
 
-```
-# Round the number of coins to the nearest integer
-num_5_cents = round(sol[x])
-num_10_cents = round(sol[y])
-
-# Print the final answer
-print("Number of 5 cent coins:", num_5_cents)
-print("Number of 10 cent coins:", num_10_cents)
-```
-'''
-
-    result=get_python_coder_tool()._run(code)
+    result=get_python_coder_tool(_env.python_path)._run(code)
     
 #    code='''
 #

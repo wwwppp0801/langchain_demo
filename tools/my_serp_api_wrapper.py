@@ -145,6 +145,9 @@ def _get_image_search_tool(**kwargs: Any) -> BaseTool:
     )
 
 if __name__=="__main__":
+    import sys
+    import os
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
     import _env
     
     tool=_get_serpapi(serpapi_api_key=_env.google_search_api_key)

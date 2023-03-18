@@ -11,6 +11,7 @@ import re
 import pandas as pd
 import sys
 
+
 def ansi_escape(line:str):
     ansi_esc = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
     return ansi_esc.sub('', line)
@@ -110,14 +111,12 @@ def test_a_query(command:str,tools="search,python_coder",verbose=True,debug=Fals
 
 def write_file(s:str,filename:str):
     if s:
+        filename=os.getcwd()+"/report/"+filename
         file = open(filename, "w")
         file.write(s)
         file.close()
-        import report.process_json
-        report.process_json.convert_json_to_excel(filename,filename+".xlsx")
-        #subprocess.Popen([_env.python_path ,"-u","report/process_json.py", filename ])
-        #df_json = pd.read_json(filename)
-        #df_json.to_excel(filename+'.xlsx')
+        import process_json
+        process_json.convert_json_to_excel(filename, filename+".xlsx")
 
 def get_final_answer(my_string,sub_string="Final Answer:"):
     last_index = my_string.rfind(sub_string) # find the last index of sub_string
