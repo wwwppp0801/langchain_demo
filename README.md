@@ -1,3 +1,9 @@
+# config
+```
+cp config.ini.example config.ini
+```
+在config.ini里填入各种app key
+
 # 依赖
 ```
 bash install_deps.sh
