@@ -2,6 +2,9 @@
 # pip install wikipedia -i https://pypi.tuna.tsinghua.edu.cn/simple
 # 同样是要修复 text=text.strip("\n \t") 的问题
 # 访问wikipedia需要翻墙
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 import _env
 
 

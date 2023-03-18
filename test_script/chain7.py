@@ -5,6 +5,9 @@
 # * 修改MyZeroShotAgent，解决多余的"字符
 # * 修改MyWolframAlphaQueryRun, 把它当成Calculator来用
 # * 修改MyLLMMathChain的prompt, 确保它会生成python代码
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 
 import _env
 

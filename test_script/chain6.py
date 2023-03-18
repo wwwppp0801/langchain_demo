@@ -4,6 +4,9 @@
 #     * 让chatgpt补充Follow up问题和Final answer总结
 #       * 请求chatgpt加stop参数，禁止其补充Intermediate answer:的结果
 #     * 让搜索来补充Intermediate answer:的结果
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 import _env
 
 
