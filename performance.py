@@ -161,7 +161,11 @@ if __name__=="__main__":
     print('{"json_filename":"'+filename+'"}')
     print('{"excel_filename":"'+filename+'.xlsx"}')
     for case in testcases:
-        query=case["query"]
+        query=""
+        if "query" in case:
+            query=case["query"]
+        else:
+            query=case["question"]
         print(query)
         row={}
         result,errorlog=test_a_query(query,tools=tools,debug=False)
@@ -174,6 +178,12 @@ if __name__=="__main__":
         if "validator" in case:
             row['validator']=case["validator"]
             row['validate_result']=validate(row['final_result'],case["validator"])
+        if "expect_answer" in case:
+            row['validator']="m(\"\\\\b"+case["expect_answer"]+"\\\\b\")"
+            try:
+                row['validate_result']=validate(row['final_result'],row["validator"])
+            except:
+                row['validate_result']="validate error:"+row['validator']
         #print(result,errorlog)
         rows.append(row)
         raw_file_str=json.dumps(rows)
