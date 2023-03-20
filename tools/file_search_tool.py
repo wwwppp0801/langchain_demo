@@ -21,6 +21,8 @@ from langchain.tools import BaseTool
 from langchain import LLMMathChain, SerpAPIWrapper
 from langchain.document_loaders import WebBaseLoader
 
+from langchain.embeddings.base import Embeddings
+
 
 #load Profile，hard code
 
@@ -52,6 +54,7 @@ class CustomFileSearchTool(BaseTool):
     ruff_db:Chroma = None
     ruff:VectorDBQA= None
     llm:BaseLLM= None
+    embeddings:Embeddings =None
     def _run(self, query: str) -> str:
         """Use the tool."""
         
@@ -64,7 +67,7 @@ class CustomFileSearchTool(BaseTool):
         persist_directory="./persist_directory/"+os.path.basename(filename)
         if os.path.exists(persist_directory):
             print("The path exists:"+persist_directory)
-            self.ruff_db = Chroma(collection_name="ruff",persist_directory=persist_directory)
+            self.ruff_db = Chroma(collection_name="ruff",persist_directory=persist_directory,embedding_function=self.embeddings)
         else:
             print("The path does not exist:"+persist_directory)
             os.makedirs(persist_directory, exist_ok=True)
@@ -81,18 +84,19 @@ class CustomFileSearchTool(BaseTool):
             docs = loader.load()
             text_splitter = CharacterTextSplitter(chunk_size=800, separator="\n", chunk_overlap=0)
             ruff_texts = text_splitter.split_documents(docs)
-            self.ruff_db = Chroma.from_documents(ruff_texts, collection_name="ruff",persist_directory=persist_directory)
+            self.ruff_db = Chroma.from_documents(ruff_texts,self.embeddings, collection_name="ruff",persist_directory=persist_directory)
             self.ruff_db.persist()
         #self.ruff_db = Chroma.from_documents(ruff_texts, collection_name="ruff")
         self.ruff = VectorDBQA.from_chain_type(llm=self.llm, chain_type="stuff", vectorstore=self.ruff_db)
         #self.ruff = VectorDBQA.from_chain_type(llm=llm, chain_type="map_reduce", vectorstore=self.ruff_db)
     # TODO: this is for backwards compatibility, remove in future
     def __init__(
-            self, name: str, description: str,llm: BaseLLM, **kwargs: Any
+            self, name: str, description: str,llm: BaseLLM,embeddings, **kwargs: Any
     ) -> None:
         super(CustomFileSearchTool, self).__init__(
             name=name, description=description, **kwargs
         )
+        self.embeddings=embeddings
         self.llm=llm
         #self.ruff_db = Chroma.from_documents([], collection_name="ruff",persist_directory="./persist_directory")
         #self.ruff_db = Chroma(collection_name="ruff",persist_directory="./persist_directory")
@@ -102,11 +106,12 @@ class CustomFileSearchTool(BaseTool):
         #ruff_db = Chroma.from_documents(ruff_texts, embeddings, collection_name="ruff",persist_directory=persist_directory)
 
 
-def get_tool(filename,llm):
+def get_tool(filename,llm,embeddings):
     search = CustomFileSearchTool(
             name = "",
             description = "",
             llm=llm,
+            embeddings=embeddings,
             )
 
     name="FileSearchTool"
@@ -137,8 +142,11 @@ if __name__ == '__main__':
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
     import _env
     llm = OpenAI(model_name=_env.model_name, temperature=0.0,openai_api_key=_env.api_key)
-    tool=get_tool('./upload/worked.txt',llm)
-    result=tool._run("who is McCarthy")
+    embeddings = OpenAIEmbeddings(openai_api_key=_env.api_key)
+    tool=get_tool('./upload/2022中国大陆薪酬趋势报告-CGP-2022-120页.pdf',llm,embeddings)
+    result=tool._run("工资最高的公司")
+    #tool=get_tool('./upload/worked.txt',llm,embeddings)
+    #result=tool._run("who is McCarthy")
     
     #tool = CustomFileSearchTool(
     #        name = "File",
