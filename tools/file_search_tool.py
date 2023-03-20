@@ -24,20 +24,9 @@ from langchain.document_loaders import WebBaseLoader
 from langchain.embeddings.base import Embeddings
 
 
-#load Profile，hard code
+from typing import Any, Dict, List, Optional
 
-#定义本地文件搜索  -> 加载 fitness doc
-#loader = TextLoader("after_sale.txt")
-#loader = TextLoader("./data/PaulGrahamEssays/worked.txt")
-#docs = loader.load()
-#text_splitter = CharacterTextSplitter(chunk_size=800, separator="\n", chunk_overlap=0)
-#embeddings = OpenAIEmbeddings()
-#ruff_texts = text_splitter.split_documents(docs)
-#
-#ruff_db = Chroma.from_documents(ruff_texts, embeddings, collection_name="ruff")
-#ruff = VectorDBQA.from_chain_type(llm=llm, chain_type="stuff", vectorstore=ruff_db)
-#
-#search = SerpAPIWrapper()
+
 
 
 
@@ -47,7 +36,53 @@ current_dir = os.getcwd()
 
 
 import json
-#Tool3
+
+
+class MyVectorDBQA(VectorDBQA):
+
+    def _call(self, inputs: Dict[str, str]) -> Dict[str, Any]:
+        """Run similarity search and llm on input query.
+
+        If chain has 'return_source_documents' as 'True', returns
+        the retrieved documents as well under the key 'source_documents'.
+
+        Example:
+        .. code-block:: python
+
+        res = vectordbqa({'query': 'This is my query'})
+        answer, docs = res['result'], res['source_documents']
+        """
+        question = inputs[self.input_key]
+
+        if self.search_type == "similarity":
+            docs = self.vectorstore.similarity_search(
+                question, k=self.k, **self.search_kwargs
+            )
+        elif self.search_type == "mmr":
+            docs = self.vectorstore.max_marginal_relevance_search(
+                question, k=self.k, **self.search_kwargs
+            )
+        else:
+            raise ValueError(f"search_type of {self.search_type} not allowed.")
+        
+
+        docs=docs[:3]
+        
+        print(docs,file=sys.stderr)
+        
+        #raise ValueError(f"stop here")
+        
+        answer, _ = self.combine_documents_chain.combine_docs(docs, question=question)
+
+        if self.return_source_documents:
+            return {self.output_key: answer, "source_documents": docs}
+        else:
+            return {self.output_key: answer}
+
+
+
+
+
 class CustomFileSearchTool(BaseTool):
     #description = customFileSearchIntent
     persist_directory:str = ""
@@ -87,7 +122,7 @@ class CustomFileSearchTool(BaseTool):
             self.ruff_db = Chroma.from_documents(ruff_texts,self.embeddings, collection_name="ruff",persist_directory=persist_directory)
             self.ruff_db.persist()
         #self.ruff_db = Chroma.from_documents(ruff_texts, collection_name="ruff")
-        self.ruff = VectorDBQA.from_chain_type(llm=self.llm, chain_type="stuff", vectorstore=self.ruff_db)
+        self.ruff = MyVectorDBQA.from_chain_type(llm=self.llm, chain_type="stuff", vectorstore=self.ruff_db)
         #self.ruff = VectorDBQA.from_chain_type(llm=llm, chain_type="map_reduce", vectorstore=self.ruff_db)
     # TODO: this is for backwards compatibility, remove in future
     def __init__(
@@ -122,7 +157,9 @@ def get_tool(filename,llm,embeddings):
     def run(query:str):
         docs=search.ruff_db.similarity_search(query)
         doc_strings = [doc.page_content for doc in docs]
-        return "\n".join(doc_strings)
+        result="\n".join(doc_strings)
+        print(len(result),result)
+        return result
 
     async def arun(self, tool_input: str) -> str:
         raise NotImplementedError("Tool does not support async")
