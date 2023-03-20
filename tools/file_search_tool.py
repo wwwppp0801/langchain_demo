@@ -117,7 +117,8 @@ class CustomFileSearchTool(BaseTool):
             else:
                 raise NotImplementedError("CustomFileSearchTool does not support type")
             docs = loader.load()
-            text_splitter = CharacterTextSplitter(chunk_size=800, separator="\n", chunk_overlap=0)
+            #text_splitter = CharacterTextSplitter(chunk_size=800, separator="\n", chunk_overlap=0)
+            text_splitter = CharacterTextSplitter(chunk_size=800, separator="", chunk_overlap=0)
             ruff_texts = text_splitter.split_documents(docs)
             self.ruff_db = Chroma.from_documents(ruff_texts,self.embeddings, collection_name="ruff",persist_directory=persist_directory)
             self.ruff_db.persist()
