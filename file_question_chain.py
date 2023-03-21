@@ -17,8 +17,6 @@ if __name__ == '__main__':
     filename=sys.argv[2]
     print(sys.argv)
     llm = OpenAI(model_name=_env.model_name, temperature=0.0,openai_api_key=_env.api_key)
-    openai.organization=_env.organization
-    openai.api_key=_env.api_key
     embeddings = OpenAIEmbeddings(openai_api_key=_env.api_key)
 
 
