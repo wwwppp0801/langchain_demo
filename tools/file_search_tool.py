@@ -123,7 +123,12 @@ class CustomFileSearchTool(BaseTool):
             self.ruff_db = Chroma.from_documents(ruff_texts,self.embeddings, collection_name="ruff",persist_directory=persist_directory)
             self.ruff_db.persist()
         #self.ruff_db = Chroma.from_documents(ruff_texts, collection_name="ruff")
-        self.ruff = MyVectorDBQA.from_chain_type(llm=self.llm, chain_type="stuff", vectorstore=self.ruff_db)
+        
+        #self.ruff = MyVectorDBQA.from_chain_type(llm=self.llm, chain_type="stuff", vectorstore=self.ruff_db)
+        #self.ruff.k=3
+        
+        self.ruff = MyVectorDBQA.from_chain_type(llm=self.llm, chain_type="map_reduce", vectorstore=self.ruff_db)
+        self.ruff.k=6
         #self.ruff = VectorDBQA.from_chain_type(llm=llm, chain_type="map_reduce", vectorstore=self.ruff_db)
     # TODO: this is for backwards compatibility, remove in future
     def __init__(
@@ -181,10 +186,15 @@ if __name__ == '__main__':
     import _env
     llm = OpenAI(model_name=_env.model_name, temperature=0.0,openai_api_key=_env.api_key)
     embeddings = OpenAIEmbeddings(openai_api_key=_env.api_key)
-    tool=get_tool('./upload/2022中国大陆薪酬趋势报告-CGP-2022-120页.pdf',llm,embeddings)
-    result=tool._run("工资最高的公司")
+    
+    #tool=get_tool('./upload/2022中国大陆薪酬趋势报告-CGP-2022-120页.pdf',llm,embeddings)
+    #result=tool._run("工资最高的公司")
+    
     #tool=get_tool('./upload/worked.txt',llm,embeddings)
     #result=tool._run("who is McCarthy")
+
+    #tool=get_tool('./upload/连城诀.txt',llm,embeddings)
+    #result=tool._run("狄云学会了血刀刀法吗")
     
     #tool = CustomFileSearchTool(
     #        name = "File",
@@ -204,5 +214,30 @@ if __name__ == '__main__':
     #result=tool._run("郭靖的母亲是谁")
     #result=tool._run("progit 的作者是谁？如果git pull的时候发生了冲突要怎么解决?")
 
-    print(result)
+
+
+    filename='./upload/连城诀.txt'
+    question="狄云学会了血刀刀法吗"
+    tool = CustomFileSearchTool(
+            name = "File",
+            #description = "you must use it first, when you need to answer questions about product after sale",
+            description = "Any question must first use this tool, using the original question as Action Input",
+            llm=llm,
+            embeddings=embeddings,
+            )
+    tool.load_from_file(filename)
+
+    result=tool._run(question)
+    print()
+    print()
+    print()
+    print("Result:")
+    from termcolor import colored
+    print(colored(result, "green"))
+    print()
+    print()
+    print()
+
+
+    #print(result)
 
