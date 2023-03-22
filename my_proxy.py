@@ -261,6 +261,7 @@ def make_app():
 def start_proxy_on_thread(port=8123,address="127.0.0.1",default_backend_server="https://api.openai.com"):
     import threading
     import time
+    global DEFAULT_BACKEND_SERVER
     DEFAULT_BACKEND_SERVER=default_backend_server
     print(port,address,default_backend_server)
     def start_ioloop():

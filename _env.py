@@ -9,6 +9,8 @@ config.read("config.ini")
 # 设置组织ID和API密钥
 #openai.organization=config.get("main", "organization")
 model_name=config.get("main", "model")
+model=config.get("main", "model")
+
 google_search_api_key=config.get("main","google_search_api_key")
 openai_api_base=config.get("main","openai_api_base")
 organization=config.get("main", "organization")
