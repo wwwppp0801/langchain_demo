@@ -147,7 +147,7 @@ class CustomFileSearchTool(BaseTool):
         #ruff_db = Chroma.from_documents(ruff_texts, embeddings, collection_name="ruff",persist_directory=persist_directory)
 
 
-def get_tool(filename,llm,embeddings):
+def get_tool(filename,llm,embeddings=None):
     search = CustomFileSearchTool(
             name = "",
             description = "",

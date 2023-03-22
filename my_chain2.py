@@ -15,7 +15,7 @@ from typing import Any, Callable, List, NamedTuple, Optional, Sequence, Tuple
 
 import openai
 
-openai.log="debug"
+#openai.log="debug"
 
 import configparser
 from langchain.agents.agent import AgentExecutor
@@ -105,20 +105,35 @@ if len(sys.argv) > 1:
                 tool = file_search_tool.get_tool(file,llm)
                 tools.append(tool)
 else:
-    tools.append(my_serp_api_wrapper._get_serpapi(serpapi_api_key=_env.google_search_api_key))
-    tools.append(my_translator_tool.en_ch_translator(_env.baidu_trans_app_id,
-                                                     _env.baidu_trans_secret_key))
-    tools.append(my_translator_tool.ch_en_translator(_env.baidu_trans_app_id,
-                                                     _env.baidu_trans_secret_key))
-    tools.append(my_wolframalpha_tool.get_tool(_env.wolframalpha_appid))
+    #tools.append(my_serp_api_wrapper._get_serpapi(serpapi_api_key=_env.google_search_api_key))
+    #tools.append(my_translator_tool.en_ch_translator(_env.baidu_trans_app_id,
+    #                                                 _env.baidu_trans_secret_key))
+    #tools.append(my_translator_tool.ch_en_translator(_env.baidu_trans_app_id,
+    #                                                 _env.baidu_trans_secret_key))
+    #tools.append(my_wolframalpha_tool.get_tool(_env.wolframalpha_appid))
+    tools.append(baidu_search_tool.get_search_api())
     tools.append(my_python_calculator.get_python_coder_tool(_env.python_path))
-    tool = file_search_tool.get_tool("./upload/worked.txt",llm)
-    tools.append(tool)
-    query="找寻一张马斯克的图片"
+    #tool = file_search_tool.get_tool("./upload/worked.txt",llm)
+    #tools.append(tool)
+    query="北京的天气"
 
 
 
 if __name__=="__main__":
+    if _env.use_proxy_logger == "1":
+        import my_proxy
+        default_backend_server=_env.proxy_default_backend_server
+        if  default_backend_server=="":
+            default_backend_server="https://api.openai.com"
+        #os.environ["http_proxy"]=_env.proxy_logger_host+":"+str(_env.proxy_logger_port)
+        #os.environ["https_proxy"]=os.environ["http_proxy"]
+        #print(os.environ['http_proxy'])
+        my_proxy.start_proxy_on_thread(port=_env.proxy_logger_port,
+                                       address=_env.proxy_logger_host,
+                                       default_backend_server=default_backend_server,
+                                       )
+
+
     print(query)
     agent = my_zero_shot_agent.MyZeroShotAgent.from_llm_and_tools(
             llm, tools,verbose=True

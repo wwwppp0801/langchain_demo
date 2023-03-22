@@ -17,6 +17,11 @@ wolframalpha_appid=config.get("main","wolframalpha_appid")
 baidu_trans_app_id=config.get("main","baidu_trans_app_id")
 baidu_trans_secret_key=config.get("main","baidu_trans_secret_key")
 
+proxy_logger_host=config.get("main","proxy_logger_host")
+proxy_logger_port=int(config.get("main","proxy_logger_port"))
+use_proxy_logger=config.get("main","use_proxy_logger")
+proxy_default_backend_server=config.get("main","proxy_default_backend_server")
+
 python_path=config.get("main","python_path")
 host=config.get("main","host")
 port=config.get("main","port")

@@ -23,3 +23,12 @@ baidu_trans_secret_key=
 python_path=/usr/bin/python3
 host=0.0.0.0
 port=8002
+
+
+
+
+use_proxy_logger=0
+#openai_api_base=http://127.0.0.1:8123/v1
+proxy_logger_host=127.0.0.1
+proxy_logger_port=8123
+proxy_default_backend_server=https://api.openai.com

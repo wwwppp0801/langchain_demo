@@ -14,7 +14,31 @@ import asyncio
 from urllib.parse import urlparse
 
 #logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(asctime)s %(message)s')
-logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(asctime)s %(message)s')
+#logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(asctime)s %(message)s',filename="openai.log")
+def getLogger():
+    logger = logging.getLogger('proxy_logger')
+    logger.setLevel(logging.DEBUG)
+
+    # 创建一个handler，用于写入日志文件
+    fh = logging.FileHandler('openai.log')
+    fh.setLevel(logging.INFO)
+
+    # 定义handler的输出格式
+    formatter = logging.Formatter('[%(levelname)s] %(asctime)s %(message)s')
+    fh.setFormatter(formatter)
+    # 给logger添加handler
+    logger.addHandler(fh)
+
+
+    # 创建一个handler，用于输出到控制台
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+    return logger
+
+logger=getLogger()
+
 
 DEFAULT_BACKEND_SERVER="https://api.openai.com"
 #DEFAULT_BACKEND_SERVER="https://www.baidu.com"
@@ -28,7 +52,7 @@ def get_proxy(url):
 
 def fetch_request(url, **kwargs):
 
-    logging.debug("fetch_request %s",url)
+    logger.debug("fetch_request %s",url)
     proxy = get_proxy(url)
     if proxy:
         logger.debug('Forward request via upstream proxy %s', proxy)
@@ -69,7 +93,7 @@ class ProxyHandler(tornado.web.RequestHandler):
         self.http_client = tornado.httpclient.AsyncHTTPClient()
     
     async def connect(self):
-        logging.debug('Start CONNECT to %s', self.request.uri)
+        logger.debug('Start CONNECT to %s', self.request.uri)
         host, port = self.request.uri.split(':')
         client = self.request.connection.stream
 
@@ -87,7 +111,7 @@ class ProxyHandler(tornado.web.RequestHandler):
                 pass
 
         async def start_tunnel():
-            logging.debug('CONNECT tunnel established to %s', self.request.uri)
+            logger.debug('CONNECT tunnel established to %s', self.request.uri)
             client.write(b'HTTP/1.0 200 Connection established\r\n\r\n')
             await asyncio.gather(
                     relay(client, upstream),
@@ -101,7 +125,7 @@ class ProxyHandler(tornado.web.RequestHandler):
                 first_line = data.splitlines()[0]
                 http_v, status, text = first_line.split(None, 2)
                 if int(status) == 200:
-                    logging.debug('Connected to upstream proxy %s', proxy)
+                    logger.debug('Connected to upstream proxy %s', proxy)
                     await start_tunnel()
                     return
 
@@ -147,7 +171,7 @@ class ProxyHandler(tornado.web.RequestHandler):
 
     async def proxy_request(self, method):
 
-        logging.debug('Handle %s request to %s', self.request.method,
+        logger.debug('Handle %s request to %s', self.request.method,
                      self.request.uri)
 
         def handle_response(response):
@@ -168,8 +192,11 @@ class ProxyHandler(tornado.web.RequestHandler):
                     self.write(response.body)
                     try:
                         import json
+                        request_body_json=json.loads(self.request.body)
                         body_json=json.loads(response.body)
-                        logging.info("openai response messages: %s",json.dumps(body_json,ensure_ascii=False))
+                        logger.info("openai messages: %s",json.dumps({"request":request_body_json,
+                                                                      "response":body_json},
+                                                                     ensure_ascii=False))
                     except Exception as e:
                         None
             self.finish()
@@ -178,12 +205,12 @@ class ProxyHandler(tornado.web.RequestHandler):
         if not body:
             body = None
 
-        try:
-            import json
-            body_json=json.loads(body)
-            logging.info("openai messages: %s",json.dumps(body_json['messages'],ensure_ascii=False))
-        except Exception as e:
-            None
+        #try:
+        #    import json
+        #    body_json=json.loads(body)
+        #    logger.info("openai messages: %s",json.dumps(body_json,ensure_ascii=False))
+        #except Exception as e:
+        #    None
                 
         try:
             if 'Proxy-Connection' in self.request.headers:
@@ -193,7 +220,7 @@ class ProxyHandler(tornado.web.RequestHandler):
                 self.request.uri = DEFAULT_BACKEND_SERVER + self.request.uri
                 parsed=urlparse(self.request.uri)
                 self.request.headers["Host"]=parsed.netloc
-                logging.debug("fetch_request %s %s %s",self.request.uri,str(self.request.headers),str(parsed))
+                logger.debug("fetch_request %s %s %s",self.request.uri,str(self.request.headers),str(parsed))
 
             resp = await fetch_request(
                 self.request.uri,
@@ -221,7 +248,7 @@ class ProxyHandler(tornado.web.RequestHandler):
         self.write_message(message)
 
     def write_error(self, status_code, **kwargs):
-        logging.error('Proxy request error: %s', self._reason)
+        logger.error('Proxy request error: %s', self._reason)
         self.set_status(status_code)
         self.write('Internal Server Error')
         self.finish()
@@ -231,27 +258,76 @@ def make_app():
         (r'.*', ProxyHandler),
         ])
 
-if __name__ == '__main__':
-    # Parse the command line arguments
-    # if len(sys.argv) < 2:
-    #     logging.error('Usage: python %s <port>', os.path.basename(sys.argv[0]))
-    #     sys.exit(1)
-    # port = int(sys.argv[1])
-    port = 8123
-    # # Create the HTTP server instance
-    app = make_app()
-    server = tornado.httpserver.HTTPServer(app, xheaders=True)
+def start_proxy_on_thread(port=8123,address="127.0.0.1",default_backend_server="https://api.openai.com"):
+    import threading
+    import time
+    DEFAULT_BACKEND_SERVER=default_backend_server
+    print(port,address,default_backend_server)
+    def start_ioloop():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        # # Create the HTTP server instance
+        app = make_app()
+        server = tornado.httpserver.HTTPServer(app, xheaders=True)
 
-    # Set the server port and start listening
-    server.bind(port)
-    server.start(1)
+        # Set the server port and start listening
+        server.bind(port=port,address=address)
+        server.start(1)
 
+
+        # Start the I/O loop
+        logger.debug('Listening on port %d', port)
+        tornado.ioloop.IOLoop.current().start()
+    
+
+    ioloop_thread = threading.Thread(target=start_ioloop)
+    ioloop_thread.daemon=True
+    ioloop_thread.start()
     # Register the signal handlers
-    signal.signal(signal.SIGTERM, lambda sig, frame: tornado.ioloop.IOLoop.current().add_callback_from_signal(
-        lambda: tornado.ioloop.IOLoop.current().stop()))
-    signal.signal(signal.SIGINT, lambda sig, frame: tornado.ioloop.IOLoop.current().add_callback_from_signal(
-        lambda: tornado.ioloop.IOLoop.current().stop()))
+    def stop():
+        loop.stop()
+        ioloop_thread.stop()
+    signal.signal(signal.SIGTERM, stop)
+    signal.signal(signal.SIGINT, stop)
+    
+    def check_port(address, port):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        result = sock.connect_ex((address, port))
+        sock.close()
+        return result == 0
 
-    # Start the I/O loop
-    logging.debug('Listening on port %d', port)
-    tornado.ioloop.IOLoop.current().start()
+    while True:
+        if check_port(address, port):
+            break
+        time.sleep(0.1)
+    return ioloop_thread
+
+
+
+if __name__ == '__main__':
+    t=start_proxy_on_thread()
+    t.join()
+    
+#    # Parse the command line arguments
+#    # if len(sys.argv) < 2:
+#    #     logger.error('Usage: python %s <port>', os.path.basename(sys.argv[0]))
+#    #     sys.exit(1)
+#    # port = int(sys.argv[1])
+#    port = 8123
+#    # # Create the HTTP server instance
+#    app = make_app()
+#    server = tornado.httpserver.HTTPServer(app, xheaders=True)
+#
+#    # Set the server port and start listening
+#    server.bind(port)
+#    server.start(1)
+#
+#    # Register the signal handlers
+#    signal.signal(signal.SIGTERM, lambda sig, frame: tornado.ioloop.IOLoop.current().add_callback_from_signal(
+#        lambda: tornado.ioloop.IOLoop.current().stop()))
+#    signal.signal(signal.SIGINT, lambda sig, frame: tornado.ioloop.IOLoop.current().add_callback_from_signal(
+#        lambda: tornado.ioloop.IOLoop.current().stop()))
+#
+#    # Start the I/O loop
+#    logger.debug('Listening on port %d', port)
+#    tornado.ioloop.IOLoop.current().start()
