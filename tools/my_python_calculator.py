@@ -64,7 +64,7 @@ def _get_my_llm_math(llm: BaseLLM) -> BaseTool:
 def get_python_coder_tool(python_path:str) -> BaseTool:
     name="PythonCoder"
     #description="you can write python code to solve the problem,you must write, you must write a complete python program , print the answer to stdout"
-    description="you can write python code to solve the problem,you must write, you must write a COMPLETE python program, include all import and variable initialization, print the answer to stdout"
+    description="you can write python code to solve the problem,you must write, you must write a COMPLETE python program, include all import and variable initialization, MUST print the final result"
     def extract_code_blocks(string):
         import re
         pattern = r'```(?:python)?\s*(.*?)\s*```' 
