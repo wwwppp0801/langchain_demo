@@ -1,15 +1,19 @@
 from langchain.agents.mrkl.base import ZeroShotAgent
 
-from typing import Any, Callable, List, NamedTuple, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 from langchain.tools.base import BaseTool
 from langchain.callbacks.base import BaseCallbackManager
 from langchain.agents.agent import AgentExecutor
 from langchain.llms.base import BaseLLM
 from langchain.agents.agent import Agent
+from langchain.agents.tools import Tool
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 import re
-    
+
+from langchain.agents.tools import InvalidTool
+
+from langchain.schema import AgentAction, AgentFinish
 
 class MyZeroShotAgent(ZeroShotAgent):
     """Agent for the MRKL chain."""
@@ -48,6 +52,8 @@ Question: {input}
 Thought:{agent_scratchpad}"""
 
 
+    
+
     @property
     def observation_prefix(self) -> str:
         """Prefix to append the observation with."""
@@ -69,7 +75,9 @@ Thought:{agent_scratchpad}"""
             regex = r"Action:(.*?)\nAction Input:(.*)"
             match = re.search(regex, llm_output, re.DOTALL)
             if not match:
-                return "Final Answer","<not for sure>" + llm_output
+                #return "Final Answer","<not for sure>" + llm_output
+                #强制生成一个final answer
+                return "generate","now i can summarize the answer\n"
                 #if "final answer" in llm_output:
                 #    return "Final Answer", llm_output
                 #if "Final answer" in llm_output:
@@ -162,3 +170,69 @@ Thought:{agent_scratchpad}"""
         template = "\n\n".join([prefix, tool_strings, format_instructions])
         return template
 
+
+def get_generate_tool(**kwargs: Any) -> BaseTool:
+    def summarize(text:str):
+        ## 不在Observation里填东西，看看会输出啥
+        return text
+    return Tool(
+        name="Generate",
+        func=summarize,
+        description="Generate a summary of the observation.",
+    )
+
+class MyAgentExecutor(AgentExecutor):
+    def _take_next_step(
+        self,
+        name_to_tool_map: Dict[str, BaseTool],
+        color_mapping: Dict[str, str],
+        inputs: Dict[str, str],
+        intermediate_steps: List[Tuple[AgentAction, str]],
+    ) -> Union[AgentFinish, Tuple[AgentAction, str]]:
+        """Take a single step in the thought-action-observation loop.
+
+        Override this to take control of how the agent makes and acts on choices.
+        """
+        # Call the LLM to see what to do.
+        output = self.agent.plan(intermediate_steps, **inputs)
+        # If the tool chosen is the finishing tool, then we end and return.
+        if isinstance(output, AgentFinish):
+            return output
+        self.callback_manager.on_agent_action(
+            output, verbose=self.verbose, color="green"
+        )
+        # Otherwise we lookup the tool
+        if output.tool in name_to_tool_map:
+            tool = name_to_tool_map[output.tool]
+            return_direct = tool.return_direct
+            color = color_mapping[output.tool]
+            llm_prefix = "" if return_direct else self.agent.llm_prefix
+            # We then call the tool on the tool input to get an observation
+            observation = tool.run(
+                output.tool_input,
+                verbose=self.verbose,
+                color=color,
+                llm_prefix=llm_prefix,
+                observation_prefix=self.agent.observation_prefix,
+            )
+        elif output.tool=="generate":
+            return output,get_generate_tool().run(
+                output.tool_input,
+                verbose=self.verbose,
+                color=None,
+                llm_prefix="",
+                observation_prefix=self.agent.observation_prefix,
+            )
+        else:
+            observation = InvalidTool().run(
+                output.tool,
+                verbose=self.verbose,
+                color=None,
+                llm_prefix="",
+                observation_prefix=self.agent.observation_prefix,
+            )
+            return_direct = False
+        if return_direct:
+            # Set the log to "" because we do not want to log it.
+            return AgentFinish({self.agent.return_values[0]: observation}, "")
+        return output, observation

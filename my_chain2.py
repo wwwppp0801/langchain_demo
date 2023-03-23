@@ -131,14 +131,17 @@ if __name__ == "__main__":
         llm, tools, verbose=True
     )
 
+    
     llm.prefix_messages = [{
         "role": "system",
         "content": agent.create_system_prompt(tools=tools)
     },]
 
-    executer = AgentExecutor.from_agent_and_tools(
+    executer = my_zero_shot_agent.MyAgentExecutor.from_agent_and_tools(
         agent=agent,
         tools=tools,
         verbose=True,
     )
+    executer.max_iterations=4
+    
     executer.run(query)
