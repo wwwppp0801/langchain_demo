@@ -25,10 +25,10 @@ Thought: you should always think about what to do
 Action: the action to take, MUST be one of [{tool_names}]
 Action Input: the input to the action
 Observation: the result of the action
-Thought: ...
-Action: ...
-Action Input: ...
-Observation: ...
+Thought: you should always think about what to do
+Action: the action to take, MUST be one of [{tool_names}]
+Action Input: the input to the action
+Observation: the result of the action
 ... (this Thought/Action/Action/Observation can repeat N times, N>0)
 Thought: I now know the final answer
 Final Answer: the final answer to the original input question
@@ -128,7 +128,7 @@ Thought:{agent_scratchpad}"""
 Thought:{agent_scratchpad}"""
         if input_variables is None:
             input_variables = ["input", "agent_scratchpad"]
-        return PromptTemplate(template=template, input_variables=input_variables)
+        return PromptTemplate(template=suffix, input_variables=input_variables)
 
     
     @classmethod
