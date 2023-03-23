@@ -306,7 +306,18 @@ def start_proxy_on_thread(port=8123,address="127.0.0.1",default_backend_server="
 
 
 if __name__ == '__main__':
-    t=start_proxy_on_thread()
+    #t=start_proxy_on_thread()
+    import _env
+    default_backend_server = _env.proxy_default_backend_server
+    if default_backend_server == "":
+        default_backend_server = "https://api.openai.com"
+    # os.environ["http_proxy"]=_env.proxy_logger_host+":"+str(_env.proxy_logger_port)
+    # os.environ["https_proxy"]=os.environ["http_proxy"]
+    # print(os.environ['http_proxy'])
+    t=start_proxy_on_thread(port=_env.proxy_logger_port,
+                                   address=_env.proxy_logger_host,
+                                   default_backend_server=default_backend_server,
+                                   )
     t.join()
     
 #    # Parse the command line arguments

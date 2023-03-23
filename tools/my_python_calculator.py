@@ -64,7 +64,7 @@ def _get_my_llm_math(llm: BaseLLM) -> BaseTool:
 def get_python_coder_tool(python_path:str) -> BaseTool:
     name="PythonCoder"
     #description="you can write python code to solve the problem,you must write, you must write a complete python program , print the answer to stdout"
-    description="Write python code to solve the problem. You MUST write a COMPLETE python program in every 'Action Input', include all import and variable initialization. MUST print the final result."
+    description="Write python code to solve the problem. You MUST write a COMPLETE python program in every 'Action Input', include all import and variable initialization. You can't use network. You MUST print the final result."
     def extract_code_blocks(string):
         import re
         pattern = r'```(?:python)?\s*(.*?)\s*```' 
@@ -85,6 +85,8 @@ def get_python_coder_tool(python_path:str) -> BaseTool:
         p = subprocess.Popen([python_path, '-c', code_str], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
         output = out.decode() + err.decode()
+        if output.strip(" \t\n")=="":
+            output="no print out answers"
         return output
 
 

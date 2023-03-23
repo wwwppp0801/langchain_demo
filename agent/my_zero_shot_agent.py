@@ -16,7 +16,7 @@ class MyZeroShotAgent(ZeroShotAgent):
     ##  Action Input多返回了一个换行符，导致匹配失效
     ## 提取出来的Action Input是largest prime number smaller than 65"
     ## 多了一个引号没处理掉，导致后面的caculator很容易出错（WolframAlpha就接受不了这种输入）
-    PREFIX = """Answer the following questions as best you can. You have access to the following tools, no manually actions, :"""
+    PREFIX = """Answer the following question as best you can. You have access to the following tools if needed, no manually actions :"""
 
     FORMAT_INSTRUCTIONS = """MUST Use the following format:
 
@@ -33,8 +33,13 @@ Observation: the result of the action
 Thought: I now know the final answer
 Final Answer: the final answer to the original input question
 
+"Final Answer:" MUST be include in last line, and the answer MUST be in the same line as "Final Answer:". 
+e.g. "Final Answer: 42".
 
-"Final Answer:" MUST be include in last line
+You can summarize all Thought and Observation to get the final answer.
+
+The fewer actions, the better
+
 
 """
     SUFFIX = """Begin!

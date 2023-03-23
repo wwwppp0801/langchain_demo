@@ -111,18 +111,18 @@ else:
 
 
 if __name__ == "__main__":
-    if _env.use_proxy_logger == "1":
-        import my_proxy
-        default_backend_server = _env.proxy_default_backend_server
-        if default_backend_server == "":
-            default_backend_server = "https://api.openai.com"
-        # os.environ["http_proxy"]=_env.proxy_logger_host+":"+str(_env.proxy_logger_port)
-        # os.environ["https_proxy"]=os.environ["http_proxy"]
-        # print(os.environ['http_proxy'])
-        my_proxy.start_proxy_on_thread(port=_env.proxy_logger_port,
-                                       address=_env.proxy_logger_host,
-                                       default_backend_server=default_backend_server,
-                                       )
+    # if _env.use_proxy_logger == "1":
+    #     import my_proxy
+    #     default_backend_server = _env.proxy_default_backend_server
+    #     if default_backend_server == "":
+    #         default_backend_server = "https://api.openai.com"
+    #     # os.environ["http_proxy"]=_env.proxy_logger_host+":"+str(_env.proxy_logger_port)
+    #     # os.environ["https_proxy"]=os.environ["http_proxy"]
+    #     # print(os.environ['http_proxy'])
+    #     my_proxy.start_proxy_on_thread(port=_env.proxy_logger_port,
+    #                                    address=_env.proxy_logger_host,
+    #                                    default_backend_server=default_backend_server,
+    #                                    )
 
     
 
