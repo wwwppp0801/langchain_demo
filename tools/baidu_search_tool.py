@@ -29,7 +29,11 @@ def search(word:str)->str:
     url = 'https://m.baidu.com/s?ip=220.181.38.119&sid=99999&platform=dueros&give=&pu=cuid%40f4Dlgk4jmofDpLqn9pw1j95bDjg-IEqm4uLlfguXviA0A%2Ccua%40_PvjhYa6vhIDJEjPkJAiC_hV2IgbN28lAqqqB%2Ccut%40%2Cosname%40baiduboxapp%2Cctv%402%2Ccen%40cuid_cua_cut%2Ccsrc%40app_box_voice&bd_ck=0&duosqid=dd0b4f26-0c33-11ed-8af8-6c92bf047346_DCS-10-102-111-27-2004-0726000721-1_2%231_0&mmsuse=plat%40dueros&intent=normal&child=1&dumisid=&bot_attr=%7B%22antiporn_threshold%22%3A%220.8%22%2C%22dcs_prefetch_secrawler%22%3A%221%22%2C%22recommendation_switch%22%3A%220%22%2C%22strict_intent_recall%22%3A%221%22%2C%22tts_mode%22%3A%222%22%2C%22use_mms_extend_display%22%3A%221%22%2C%22image_hint_and_search_no_resource%22%3A%221%22%2C%22image_voice_need_display%22%3A%221%22%2C%22voice_filter%22%3A%221%22%2C%22mms_multi_result_template%22%3A%221%22%2C%22iov_no_url_list%22%3A%221%22%2C%22filter_mms_tplname%22%3A%22vid_hor%5C%2F%5C%2F%22%2C%22iov_disable_swan%22%3A%221%22%2C%22iov_native_img_directive%22%3A%221%22%2C%22screen_common_mode%22%3A%221%22%2C%22iov_rewrite_intent%22%3A%221%22%2C%22iov_rank_bk_result%22%3A%221%22%2C%22iov_rewrite_plan%22%3A%22sgminfo4%22%7D&du_stg=1&tn=dushow&more_res_type=&ssid=0&bd_page_type=1&from=0&logid=10668629920597866922&dumisid=4009'
     params = {'word': word}
     response = requests.get(url, params=params)
-    data = json.loads(response.text)
+    try:
+        data = json.loads(response.text)
+    except Exception as e:
+        print("response error:",response.text,url,params)
+        raise e
     #print(json.dumps(data['data']['tplData']['asResult'],indent=4,ensure_ascii=False))
     #print(json.dumps(data['data']['tplData']['asResult'],indent=4,ensure_ascii=False))
     print(json.dumps(data['data']['tplData']['asResult']['item'][0],indent=4,ensure_ascii=False),file=sys.stderr)

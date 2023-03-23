@@ -7,6 +7,7 @@ from langchain.agents.agent import AgentExecutor
 from langchain.llms.base import BaseLLM
 from langchain.agents.agent import Agent
 from langchain.chains import LLMChain
+from langchain.prompts import PromptTemplate
 import re
     
 
@@ -17,17 +18,17 @@ class MyZeroShotAgent(ZeroShotAgent):
     ## 多了一个引号没处理掉，导致后面的caculator很容易出错（WolframAlpha就接受不了这种输入）
     PREFIX = """Answer the following questions as best you can. You have access to the following tools, no manually actions, :"""
 
-    FORMAT_INSTRUCTIONS = """Use the following format:
+    FORMAT_INSTRUCTIONS = """MUST Use the following format:
 
 Question: the input question you must answer
 Thought: you should always think about what to do
 Action: the action to take, MUST be one of [{tool_names}]
 Action Input: the input to the action
 Observation: the result of the action
-Thought: you should always think about what to do
-Action: the action to take, MUST be one of [{tool_names}]
-Action Input: the input to the action
-Observation: the result of the action
+Thought: ...
+Action: ...
+Action Input: ...
+Observation: ...
 ... (this Thought/Action/Action/Observation can repeat N times, N>0)
 Thought: I now know the final answer
 Final Answer: the final answer to the original input question
@@ -86,7 +87,7 @@ Thought:{agent_scratchpad}"""
         **kwargs: Any,
     ) -> Agent:
         ZeroShotAgent._validate_tools(tools)
-        prompt = ZeroShotAgent.create_prompt(
+        prompt = MyZeroShotAgent.create_prompt(
             tools,
             prefix=prefix,
             suffix=suffix,
@@ -102,6 +103,57 @@ Thought:{agent_scratchpad}"""
         return MyZeroShotAgent(llm_chain=llm_chain, allowed_tools=tool_names, **kwargs)
         #return ZeroShotAgent.from_llm_and_tools(llm,tools,callback_manager,prefix,suffix,format_instructions,input_variables,**kwargs)
 
+    @classmethod
+    def create_prompt(
+        cls,
+        tools: Sequence[BaseTool],
+        prefix: str = PREFIX,
+        suffix: str = SUFFIX,
+        format_instructions: str = FORMAT_INSTRUCTIONS,
+        input_variables: Optional[List[str]] = None,
+    ) -> PromptTemplate:
+        """Create prompt in the style of the zero shot agent.
 
+        Args:
+            tools: List of tools the agent will have access to, used to format the
+                prompt.
+            prefix: String to put before the list of tools.
+            suffix: String to put after the list of tools.
+            input_variables: List of input variables the final prompt will expect.
 
+        Returns:
+            A PromptTemplate with the template assembled from the pieces here.
+        """
+        template = """Question: {input}
+Thought:{agent_scratchpad}"""
+        if input_variables is None:
+            input_variables = ["input", "agent_scratchpad"]
+        return PromptTemplate(template=template, input_variables=input_variables)
+
+    
+    @classmethod
+    def create_system_prompt(
+        cls,
+        tools: Sequence[BaseTool],
+        prefix: str = PREFIX,
+        format_instructions: str = FORMAT_INSTRUCTIONS,
+        input_variables: Optional[List[str]] = None,
+    ) -> str:
+        """Create prompt in the style of the zero shot agent.
+
+        Args:
+            tools: List of tools the agent will have access to, used to format the
+                prompt.
+            prefix: String to put before the list of tools.
+            suffix: String to put after the list of tools.
+            input_variables: List of input variables the final prompt will expect.
+
+        Returns:
+            A PromptTemplate with the template assembled from the pieces here.
+        """
+        tool_strings = "\n".join([f"{tool.name}: {tool.description}" for tool in tools])
+        tool_names = ", ".join([tool.name for tool in tools])
+        format_instructions = format_instructions.format(tool_names=tool_names)
+        template = "\n\n".join([prefix, tool_strings, format_instructions])
+        return template
 
