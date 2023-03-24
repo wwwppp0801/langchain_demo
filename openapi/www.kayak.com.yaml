@@ -1,0 +1,256 @@
+openapi: 3.0.1
+info:
+  title: KAYAK - Flights, Hotels, Cars
+  description: A plugin that allows users to search for the best deals on flights, hotels and cars
+servers:
+  - url: https://www.kayak.com
+paths:
+  /sherlock/openai/search/flights:
+    post:
+      operationId: searchFlights
+      summary: Search flights on a flight route for certain dates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/searchFlightsRequest'
+      responses:
+        "200":
+          description: OK
+        "429":
+          description: Rate limited
+  /sherlock/openai/search/stays:
+    post:
+      operationId: searchStays
+      summary: Search stays for certain dates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/searchStaysRequest'
+      responses:
+        "200":
+          description: OK
+        "429":
+          description: Rate limited
+  /sherlock/openai/search/cars:
+    post:
+      operationId: searchCars
+      summary: Search rental cars for certain dates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/searchCarsRequest'
+      responses:
+        "200":
+          description: OK
+        "429":
+          description: Rate limited
+  /sherlock/openai/explore:
+    post:
+      operationId: explore
+      summary: Find places to go on a budget. This endpoint will return destinations that can be reached by plane within the given budget.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/exploreRequest'
+      responses:
+        "200":
+          description: OK
+        "429":
+          description: Rate limited
+  /sherlock/openai/insights/flights:
+    post:
+      operationId: flightInsights
+      summary: This endpoint can be used when the flight route is known yet the travel dates are flexible. For example a user may say they want to travel for 2 weeks whenever air fares are the lowest.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/flightInsightsRequest'
+      responses:
+        "200":
+          description: OK
+        "429":
+          description: Rate limited
+
+components:
+  schemas:
+    searchFlightsRequest:
+      type: object
+      properties:
+        origin:
+          type: string
+          description: The origin from which the flight starts. Will be approximated if not specified.
+          required: false
+        destination:
+          type: string
+          description: The destination to which the flight goes
+          required: true
+        departDate:
+          type: string
+          format: date
+          description: Departure date of the flight at the origin
+          required: true
+        returnDate:
+          type: string
+          format: date
+          description: Return date of the flight. Only required for round trip flights
+          required: false
+        numAdults:
+          type: integer
+          description: Number of adults that are flying
+          required: false
+        numChildren:
+          type: integer
+          description: Number of children that are flying
+          required: false
+        nonStopOnly:
+          type: boolean
+          description: Only show non-stop flights
+          required: false
+    searchStaysRequest:
+      type: object
+      properties:
+        destination:
+          type: string
+          description: The city where you need a stay
+          required: true
+        landmark:
+          type: string
+          description: Optional landmark to refine the location
+          required: false
+        address:
+          type: string
+          description: Optional address to refine the location
+          required: false
+        checkinDate:
+          type: string
+          format: date
+          description: Check in date
+          required: true
+        checkoutDate:
+          type: string
+          format: date
+          description: Check out date
+          required: true
+        numAdults:
+          type: integer
+          description: Number of adults that are staying.
+          required: false
+        numChildren:
+          type: integer
+          description: Number of children that are staying
+          required: false
+        numRooms:
+          type: integer
+          description: Number of rooms needed
+          required: false
+        minNumStars:
+          type: integer
+          description: Minimum number of stars the accommodation should have
+          required: false
+    searchCarsRequest:
+      type: object
+      properties:
+        origin:
+          type: string
+          description: The location where you want to pick your rental car
+          required: true
+        destination:
+          type: string
+          description: The location where you want to drop off your rental car. Will take the origin if no other location is given.
+          required: false
+        pickupDate:
+          type: string
+          format: date
+          description: The date when you want to pick up your rental car
+          required: true
+        pickupHour:
+          type: integer
+          description: Rental car pick up hour in 24-hour format. Optional parameter that defaults to noon.
+          required: false
+        dropoffDate:
+          type: string
+          format: date
+          description: The date when you want to drop off your rental car
+          required: true
+        dropoffHour:
+          type: integer
+          description: Rental car drop off hour in 24-hour format. Optional parameter that defaults to noon.
+          required: false
+    exploreRequest:
+      type: object
+      properties:
+        origin:
+          type: string
+          description: The origin from which the flight starts. Will be approximated if not specified.
+          required: false
+        destinationHints:
+          type: array
+          items:
+            type: string
+          description: Optional list of cities that are requested to be included in the results, if prices are available. 
+          required: false
+        departDate:
+          type: string
+          format: date
+          description: Departure date of the flight at the origin
+          required: false
+        returnDate:
+          type: string
+          format: date
+          description: Return date of the flight. Must be specified when a departure date is given.
+          required: false
+        budgetUsd:
+          type: integer
+          description: Expected cost of round trip flight ticket for one person
+          required: false
+        nonStopOnly:
+          type: boolean
+          description: Only show non-stop flights
+          required: false
+        useExactDates:
+          type: boolean
+          description: Set to true if travel on specific dates is requested. The default is flexible travel within a time period.
+          required: false
+        minDays:
+          type: integer
+          description: Minimum duration that the suggested trips should have. Expressed in the number of days
+          required: false
+        maxDays:
+          type: integer
+          description: Maximum duration that the suggested trips should have. Expressed in the number of days
+          required: false
+    flightInsightsRequest:
+      type: object
+      properties:
+        origin:
+          type: string
+          description: The origin from which the flight starts. Will be approximated if not specified.
+          required: false
+        destination:
+          type: string
+          description: The destination to which the flight goes
+          required: true
+        departDate:
+          type: string
+          format: date
+          description: Departure date of the flight at the origin
+          required: true
+        returnDate:
+          type: string
+          format: date
+          description: Return date of the flight. Only required for round trip flights
+          required: false
+        nonStopOnly:
+          type: boolean
+          description: Only show non-stop pricing if non-stop flights are available on the requested route
+          required: false
