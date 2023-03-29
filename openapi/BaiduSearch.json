@@ -1,0 +1,19 @@
+{
+    "schema_version": "v1",
+    "name_for_human": "BaiduSearch",
+    "name_for_model": "BaiduSearch",
+    "description_for_human": "Baidu search engine. Useful for when you need to answer questions about current events or chinese content. Input should be a chinese search query.",
+    "description_for_model": "Baidu search engine. Useful for when you need to answer questions about current events or chinese content. Input should be a chinese search query.",
+    "auth": {
+      "type": "none"
+    },
+    "api": {
+      "type": "openapi",
+      "url": "https://api.slack.com/specs/openapi/ai-plugin.yaml",
+      "has_user_authentication": true
+    },
+    "logo_url": "https://slack.com/img/slack_logo_mark.svg",
+    "contact_email": "TODO",
+    "legal_info_url": "TODO"
+  }
+  

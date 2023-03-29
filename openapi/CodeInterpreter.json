@@ -1,0 +1,19 @@
+{
+    "schema_version": "v1",
+    "name_for_human": "CodeInterpreter",
+    "name_for_model": "CodeInterpreter",
+    "description_for_human": "Plugin for python code interpreter.",
+    "description_for_model": "Write python code to solve math questions. You MUST write a COMPLETE python program in every step, include all import and variable initialization. You can't use network. You MUST print the final result",
+    "auth": {
+      "type": "none"
+    },
+    "api": {
+      "type": "openapi",
+      "url": "https://api.slack.com/specs/openapi/ai-plugin.yaml",
+      "has_user_authentication": true
+    },
+    "logo_url": "https://slack.com/img/slack_logo_mark.svg",
+    "contact_email": "TODO",
+    "legal_info_url": "TODO"
+  }
+  
