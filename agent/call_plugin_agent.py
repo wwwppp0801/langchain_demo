@@ -47,7 +47,7 @@ def get_tools_from_api_doc(api_doc:Dict)->List[BaseTool]:
             params={}
             if input[0]=="{":
                 params=json.loads(input)
-            data=input
+            data=json.dumps(json.loads(input))
             # 根据请求方法发送请求
             if method.upper() == 'GET':
                 response = requests.get(url, headers=headers, params=params)
@@ -59,7 +59,7 @@ def get_tools_from_api_doc(api_doc:Dict)->List[BaseTool]:
                 response = requests.delete(url, headers=headers, params=params)
             else:
                 raise ValueError('Unsupported HTTP method: {}'.format(method))
-            return response
+            return f'status_code:{response.status_code}, body:{response.text}'
         return run
 
     list=[]
@@ -89,6 +89,12 @@ class CallPluginAgent(ZeroShotAgent):
         return "Observation:"
 
     def _extract_tool_and_input(self, text: str) -> Optional[Tuple[str, str]]:
+        def extract_real_action(raw_action:str):
+            regex = r"\"(.*?)\""
+            match = re.search(regex, raw_action, re.DOTALL)
+            if match != None:
+                return match.group(1)
+            return raw_action
         def get_action_and_input(llm_output: str) -> Tuple[str, str]:
             """Parse out the action and input from the LLM output.
 
@@ -113,7 +119,8 @@ class CallPluginAgent(ZeroShotAgent):
                 #    return "Final Answer", llm_output
                 #raise ValueError(f"Could not parse LLM output: `{llm_output}`")
             action = match.group(1).strip()
-            action_input = match.group(2).strip("\n").strip(" ").strip('"')
+            action = extract_real_action(action)
+            action_input = match.group(2).strip("\n \"\t`")
             return action, action_input
         return get_action_and_input(text)
     
@@ -202,7 +209,7 @@ MUST Use the following format:
 
 Question: the input question you must answer
 Thought: you should always think about what to do
-Action: the "operationId" of api. MUST be include in api document
+Action: the operationId of api.
 Action Input: "parameters" and "requestBody" of api calling, which are encoding in json format . MUST be include in api document
 Observation: the result of the api calling
 ... (this Thought/Action/Action/Observation can repeat N times, N>0)
@@ -298,8 +305,11 @@ if __name__=="__main__":
     # plugin_name="www.wolframalpha.com"
     # query="Find the minimum value of x^2 + 9x - 5"
 
-    plugin_name="api.speak.com"
-    query="把下面这这句话翻译成中文：To make agents more powerful we need to make them iterative, ie. call the model multiple times until they arrive at the final answer. That's the job of the AgentExecutor."
+    # plugin_name="api.speak.com"
+    # query="I am a America, I am learning Chinese, translate into Chinese:\n The OpenAI API can be applied to virtually any task that involves understanding or generating natural language, code, or images. We offer a spectrum of models with different levels of power suitable for different tasks, as well as the ability to fine-tune your own custom models. These models can be used for everything from content generation to semantic search and classification."
+
+    plugin_name="www.Klarna.com"
+    query="where can i buy black flowers"
 
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
     import _env
