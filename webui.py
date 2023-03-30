@@ -5,6 +5,7 @@ import time
 from flask import Flask, render_template, Response, request
 import flask
 import subprocess 
+import json
 
 from flask_socketio import SocketIO
 
@@ -144,6 +145,32 @@ def run_test_cases(data):
     pipe_process_to_socket_io(process,request.sid)
 
     print("end run testcases")
+
+
+### mock京东插件的接口
+@app.route("/searchProduct", methods=["POST"])
+def searchProduct():
+     # 将查询结果转换为JSON格式
+    print(request.data)
+    products = [
+        {'id':12345,"name":"100朵白色的花","price":100},
+        {'id':12346,"name":"4090显卡","price":12999},
+        {'id':12347,"name":"50朵黑色的花","price":80},
+        ]
+    
+    result = json.dumps({"status":0,"result":{"items":products}})
+    # 返回JSON数据
+    return Response(result, mimetype='application/json')
+
+### mock京东插件的接口
+@app.route("/addToCart", methods=["POST"])
+def addToCart():
+    print(request.data)
+    result = json.dumps({"status":0})
+    # 返回JSON数据
+    return Response(result, mimetype='application/json')
+
+
 
 
 if __name__ == "__main__":

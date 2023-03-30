@@ -209,7 +209,7 @@ MUST Use the following format:
 
 Question: the input question you must answer
 Thought: you should always think about what to do
-Action: the operationId of api.
+Action: one operationId of api. you can only call one api at a time
 Action Input: "parameters" and "requestBody" of api calling, which are encoding in json format . MUST be include in api document
 Observation: the result of the api calling
 ... (this Thought/Action/Action/Observation can repeat N times, N>0)
@@ -308,8 +308,14 @@ if __name__=="__main__":
     # plugin_name="api.speak.com"
     # query="I am a America, I am learning Chinese, translate into Chinese:\n The OpenAI API can be applied to virtually any task that involves understanding or generating natural language, code, or images. We offer a spectrum of models with different levels of power suitable for different tasks, as well as the ability to fine-tune your own custom models. These models can be used for everything from content generation to semantic search and classification."
 
-    plugin_name="www.Klarna.com"
-    query="where can i buy black flowers"
+    # plugin_name="www.Klarna.com"
+    # query="where can i buy black flowers"
+
+    # plugin_name="jd.com"
+    # query="i want to buy some flowers"
+
+    plugin_name="jd.com"
+    query="i want to buy a graphic card"
 
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
     import _env

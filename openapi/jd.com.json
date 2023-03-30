@@ -1,0 +1,18 @@
+{
+    "schema_version": "v1",
+    "name_for_human": "JingDong",
+    "name_for_model": "JingDong",
+    "description_for_human": "Jingdong plugin, search product, add product to your shopping cart",
+    "description_for_model": "Jingdong plugin, search product, add product to your shopping cart",
+    "auth": {
+        "type": "none"
+    },
+    "api": {
+        "type": "openapi",
+        "url": "http://127.0.0.1:8002/jd.com.yaml",
+        "is_user_authenticated": false
+    },
+    "logo_url": "https://api.speak.com/ai-plugin-logo.png",
+    "contact_email": "support@speak.com",
+    "legal_info_url": "http://speak.com/legal"
+}

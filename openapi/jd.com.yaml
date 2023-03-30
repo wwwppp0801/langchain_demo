@@ -1,0 +1,91 @@
+openapi: 3.0.1
+info:
+  title: JingDong AI Plugin
+  description: A plugin that allows users use JingDong. Search product. Add product to cart.
+  version: 'v1'
+servers:
+  - url: http://127.0.0.1:8002
+components:
+  schemas:
+    searchRequest:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          description: Search query
+          required: true
+    searchResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/productItem"
+    productItem:
+      type: object
+      properties:
+        id:
+          type: string
+          required: true
+          description: the id of product
+        name:
+          type: string
+          required: true
+          description: the name of product
+paths:
+  /searchProduct:
+    post:
+      operationId: searchProduct
+      summary: Search for product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/searchRequest'
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                properties:
+                  status:
+                    type: integer
+                    description: 0 means success, others means search failed
+                  result:
+                    $ref: '#/components/schemas/searchResult'
+  /addToCart:
+    post:
+      operationId: addToCart
+      summary: add product to cart
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+              properties:
+                id:
+                  type: integer
+                  description: this id of product, which will be add to cart
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                properties:
+                  status:
+                    type: integer
+                    description: 0 means success, others means search failed
