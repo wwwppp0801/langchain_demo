@@ -171,6 +171,15 @@ def addToCart():
     return Response(result, mimetype='application/json')
 
 
+### mock dueros iot api
+@app.route("/iotPlan", methods=["POST"])
+def iotPlan():
+    print(request.data)
+    result = json.dumps({"status":0})
+    # 返回JSON数据
+    return Response(result, mimetype='application/json')
+
+
 
 
 if __name__ == "__main__":

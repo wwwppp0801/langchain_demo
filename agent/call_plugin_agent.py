@@ -208,13 +208,13 @@ Answer the following question as best as you can. You have access to your apis. 
 MUST Use the following format:
 
 Question: the input question you must answer
-Thought: you should always think about what to do
-Action: one operationId of api. you can only call one api at a time
-Action Input: "parameters" and "requestBody" of api calling, which are encoding in json format . MUST be include in api document
+Thought: you should always think about what to do, better in chinese
+Action: one operationId of api. you can only call ONE api at a time
+Action Input: "parameters" and "requestBody" of api calling, which is encoding in json format . You can only send ONE request at a time . MUST be include in api document
 Observation: the result of the api calling
 ... (this Thought/Action/Action/Observation can repeat N times, N>0)
 Thought: I now know the final answer
-Final Answer: the final answer to the original input question
+Final Answer: the final answer to the original input question, better in chinese
 
 """
         env = jinja2.Environment(loader=jinja2.BaseLoader)
@@ -313,9 +313,33 @@ if __name__=="__main__":
 
     # plugin_name="jd.com"
     # query="i want to buy some flowers"
+    
+    # plugin_name="jd.com"
+    # query="i want to buy a graphic card"
 
-    plugin_name="jd.com"
-    query="i want to buy a graphic card"
+
+    plugin_name="iot.dueros.com"
+    query="我每天早上7点半一定要起床，不然会赶不上地铁，周末可以晚一些，大改9点左右，干脆就9点半吧。白天家里一般没有人，帮我把窗帘拉上。"
+
+    
+
+    plugin_name="iot.dueros.com"
+    query="我平时晚上下班回家前一定要帮我把玄关的灯打开，否则开门之后太黑了。但我不在家的时候一定要记得帮我关上"
+
+    
+
+    plugin_name="iot.dueros.com"
+    query="温度的话冬天室内温度不能低于23度，夏天温度可以定在26度，但夏天晚上睡觉后不能总开着，不然很容易感冒，但也不能一直不开，太热很影响睡眠"
+
+
+    plugin_name="iot.dueros.com"
+    query="我晚上睡觉的时间一般都在11点左右，但偶尔会失眠。所以我基本会在睡前半个小时看会书。如果你有什么好的助眠方法也可以给我"
+
+    plugin_name="iot.dueros.com"
+    query="我每天早上7点半一定要起床，不然会赶不上地铁，周末可以晚一些，大改9点左右，干脆就9点半吧。起床要用闹钟叫醒我。另外，白天家里一般没有人，帮我把窗帘拉上。"
+
+
+    
 
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
     import _env
@@ -341,6 +365,6 @@ if __name__=="__main__":
         plugin_name=plugin_name,
         verbose=True,
     )
-    executer.max_iterations=2
+    executer.max_iterations=4
     
     executer.run(query)
