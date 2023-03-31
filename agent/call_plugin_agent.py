@@ -201,8 +201,8 @@ Thought:{agent_scratchpad}"""
         manifest_doc=self.read_file(f"{self.plugin_name}.json")
         api_doc=self.read_file(f"{self.plugin_name}.yaml")
 
-        print(manifest_doc)
-        print(api_doc)
+        print("manifest_doc:",manifest_doc,file=sys.stderr)
+        print("api_doc",api_doc,file=sys.stderr)
         system_template_str="""You are {{manifest_doc["name_for_model"]|tojson}}.
 Here is what you can do:{{manifest_doc["description_for_model"]|tojson}}
 Your api document, in openapi format:{{api_doc|tojson}}
