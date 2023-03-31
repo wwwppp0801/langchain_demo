@@ -201,8 +201,8 @@ Thought:{agent_scratchpad}"""
         manifest_doc=self.read_file(f"{self.plugin_name}.json")
         api_doc=self.read_file(f"{self.plugin_name}.yaml")
 
-        print("manifest_doc:",manifest_doc,file=sys.stderr)
-        print("api_doc",api_doc,file=sys.stderr)
+        print("manifest_doc:",json.dumps(manifest_doc,indent=4),file=sys.stderr)
+        print("api_doc",json.dumps(api_doc,indent=4),file=sys.stderr)
         system_template_str="""You are {{manifest_doc["name_for_model"]|tojson}}.
 Here is what you can do:{{manifest_doc["description_for_model"]|tojson}}
 Your api document, in openapi format:{{api_doc|tojson}}
@@ -213,7 +213,7 @@ MUST Use the following format:
 
 Question: the input question you must answer
 Thought: you should always think about what to do, better in chinese
-Action: one operationId of api. you can only call ONE api at a time
+Action: one operationId of api. you can only call ONE api at a time. Only clean api operationId are included, no colloquial expressions.
 Action Input: "parameters" and "requestBody" of api calling, which is encoding in json format . You can only send ONE request at a time . MUST be include in api document
 Observation: the result of the api calling
 ... (this Thought/Action/Action/Observation can repeat N times, N>0)
