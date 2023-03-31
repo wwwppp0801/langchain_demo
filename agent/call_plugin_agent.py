@@ -83,6 +83,8 @@ def get_tools_from_api_doc(api_doc:Dict)->List[BaseTool]:
 class CallPluginAgent(ZeroShotAgent):
     """Agent for the CallPlugin."""
 
+    plugin_name:str=None
+
     @property
     def observation_prefix(self) -> str:
         """Prefix to append the observation with."""
@@ -171,7 +173,9 @@ class CallPluginAgent(ZeroShotAgent):
         tools=get_tools_from_api_doc(api_doc=api_doc)
 
         tool_names = [tool.name for tool in tools]
-        return cls(llm_chain=llm_chain, allowed_tools=tool_names, **kwargs)
+        obj=cls(llm_chain=llm_chain, allowed_tools=tool_names, **kwargs)
+        obj.plugin_name=plugin_name
+        return obj
         
         #return cls(llm_chain=llm_chain, allowed_tools=[], **kwargs)
         #return ZeroShotAgent.from_llm_and_tools(llm,tools,callback_manager,prefix,suffix,format_instructions,input_variables,**kwargs)
@@ -194,8 +198,8 @@ Thought:{agent_scratchpad}"""
     def create_system_prompt(
         self,
     ) -> str:
-        manifest_doc=self.read_file(f"{plugin_name}.json")
-        api_doc=self.read_file(f"{plugin_name}.yaml")
+        manifest_doc=self.read_file(f"{self.plugin_name}.json")
+        api_doc=self.read_file(f"{self.plugin_name}.yaml")
 
         print(manifest_doc)
         print(api_doc)

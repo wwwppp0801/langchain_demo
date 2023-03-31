@@ -17,25 +17,19 @@
             <div class="row mt-1">
                 <form id="form" action="#">
                     <div class="form-group col-md-10 d-flex align-items-center">
-                        <input type="text" class="form-control" id="input" placeholder="Enter a question">
+                        <input type="text" class="form-control" id="input" placeholder="Enter a command">
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </div>
+                    <div class="input-group" id="checkbox_group">
+
+                        {% for plugin_name in plugin_names %}
+                        <div class="input-group-text">
+                            <input {% if loop.index==1%}checked{% endif %} class="form-check-input" name="plugin_name" type="radio" value="{{plugin_name}}" id="tool{{loop.index}}">
+                            <label class="form-check-label" for="tool{{loop.index}}">{{plugin_name}}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
                 </form>
-            </div>
-            <div class="row mb-1">
-                 默认提问文件: <a href="download/worked.txt" target="_blank" class="link">worked.txt</a>&nbsp;
-            </div>
-            <div class="row mb-1">
-                <form id="upload_form" method="post" action="/upload" enctype="multipart/form-data">
-                    <!-- 添加一个文件选择元素 -->
-                    <input type="file" name="file" id="file">
-                    <!-- 添加一个隐藏的input元素，用来存储文件名 -->
-                    <input type="hidden" name="filename" id="filename">
-                    <!-- 添加一个提交按钮 -->
-                    <input type="submit" value="Upload">
-                </form>
-                <!-- 显示上传结果 -->
-                <div id="result"></div>
             </div>
 
             <h3>程序输出</h1>
@@ -55,51 +49,23 @@
         <!-- Custom script -->
         <script>
             let page_id=new Date().getTime()+Math.random();
-            $("#upload_form").submit(function(e){
-                // 阻止默认行为
-                e.preventDefault();
-                // 获取表单中的文件对象
-                var file = $("#file")[0].files[0];
-                // 检查文件是否存在并且合法
-                if (file && file.name) {
-                    // 创建一个FormData对象
-                    var formData = new FormData();
-                    // 将文件添加到FormData对象中
-                    formData.append("file", file);
-                    // 将文件名添加到FormData对象中
-                    formData.append("filename", file.name);
-                    // 使用ajax()方法发送请求到服务器端
-                    $.ajax({
-                        url: "/upload",
-                        type: "POST",
-                        data: formData,
-                        processData: false,
-                        contentType: false,
-                        success: function(data) {
-                            // 如果成功，显示返回的信息
-                            $("#result").html(data);
-                        },
-                        error: function(xhr, status, error) {
-                            // 如果失败，显示错误信息
-                            $("#result").html(error);
-                        }
-                    });
-                } else {
-                    // 如果没有选择或者无效的文件，显示错误信息
-                    $("#result").html("<p>No file selected or invalid file.</p>");
-                }
-            });
-            let filename="worked.txt";
-            // 监听onchange事件
-            $("#file").change((e) => {
-                // 获取FileList对象
-                const files = e.target.files;
-                // 获取第一个文件的文件名
-                filename = files[0].name;
-                // 打印文件名
-                console.log(filename);
-            });
             
+            function getToolValues(){
+                var tools = $("#checkbox_group input:checked");
+
+                // Create an array to store the values of the checked checkboxes
+                var toolValues = [];
+
+                // Loop through each checked checkbox and push its value to the array
+                tools.each(function() {
+                    toolValues.push($(this).val());
+                });
+
+                // Join the array elements with a comma separator
+                //var toolString = toolValues.join(",");
+                //return toolString
+                return toolValues[0];
+            }
             // Get the socket object
             var socket = io.connect();
 
@@ -114,10 +80,11 @@
                 event.preventDefault();
                 $("#output").html("")
                 $("#errorlog").html("")
-
-                let question = input.value;
-                if (question) {
-                    socket.emit('file_question', {page_id:page_id,question:question,filename:filename});
+                var command = input.value;
+                if (command) {
+                    // Send the command to the server
+                    socket.emit('call_plugin', {command: command,plugin_name:getToolValues(),page_id});
+                    // Clear the input field
                     input.value = '';
                 }
             });
@@ -160,14 +127,6 @@
                                 let html=json.images.map(function(url){
                                     return "<div style='max-width:400px' class=\"row\"><img src=\""+url+"\"/></div>"
                                 }).join("\n")
-                                $(output).append(html);
-                            }
-                            if(json.excel_filename){
-                                let html= "<div style='max-width:400px' class=\"row\"><a target='_blank' href=\"report/"+json.excel_filename+"\">"+json.excel_filename+"</a></div>";
-                                $(output).append(html);
-                            }
-                            if(json.json_filename){
-                                let html= "<div style='max-width:400px' class=\"row\"><a target='_blank' href=\"report/"+json.json_filename+"\">"+json.json_filename+"</a></div>";
                                 $(output).append(html);
                             }
                         }catch(e){}

@@ -19,8 +19,8 @@ paths:
               properties:
                 time:
                   type: string
-                  required: true
-                  description: 'format:```{hour}:{minutes}```, eg: ```22:06```. The {hour} field is on a 24-hour basis'
+                  required: false
+                  description: 'format:```{hour}:{minutes}```, eg: ```22:06```. The {hour} field is on a 24-hour basis. No this field means "now".'
                 date:
                   type: string
                   required: false

@@ -20,7 +20,8 @@ socketio = SocketIO(app)
 @app.route("/")
 def index():
     # render a template with a div element for displaying output and an input element and a button for submitting name parameter
-    return render_template("index.html")
+    return render_template("index.html",
+                           nav_tabs=get_nav_tabs(request.path),)
 
 
 
@@ -110,24 +111,56 @@ def report(filename):
 @app.route("/run_test_cases")
 def run_test_cases_index():
     # render a template with a div element for displaying output and an input element and a button for submitting name parameter
-    return render_template("run_test_cases.html")
+    return render_template("run_test_cases.html",
+                           nav_tabs=get_nav_tabs(request.path),)
+
+@app.route("/call_plugin")
+def call_plugin_index():
+    # render a template with a div element for displaying output and an input element and a button for submitting name parameter
+    return render_template("call_plugin.html",
+                           plugin_names=["iot.dueros.com",
+                                         "jd.com",
+                                         "www.Klarna.com"],
+                           nav_tabs=get_nav_tabs(request.path),
+                           )
 
 
 @app.route("/file_question")
 def file_question_index():
     # render a template with a div element for displaying output and an input element and a button for submitting name parameter
-    return render_template("file_question.html")
+    return render_template("file_question.html",
+                           nav_tabs=get_nav_tabs(request.path),)
 
+def get_nav_tabs(path:str):
+    nav_tabs= [
+            {"path":"/","name":"langchain","title":"langchain"},
+            {"path":"/run_test_cases","name":"run_test_cases","title":"运行测试用例"},
+            {"path":"/call_plugin","name":"call_plugin","title":"调用插件"},
+            {"path":"/file_question","name":"file_question","title":"文件问答"},
+    ]
+    for nav_tab in nav_tabs:
+        if nav_tab["path"]==path:
+            nav_tab["active"]="active"
+    return nav_tabs
 
 
 @socketio.on('file_question')
-def run_test_cases(data):
+def file_question(data):
     filename = data['filename']
     question = data['question']
     if filename!='':
         filename="./upload/"+filename
     print(data)
     process = subprocess.Popen([_env.python_path ,"-u","file_question_chain.py",question, filename], stdout=subprocess.PIPE, stderr=subprocess.PIPE , bufsize=0)
+    # 创建一个空集合，用于存放已经结束的文件对象
+    pipe_process_to_socket_io(process,request.sid)
+    print("end")
+
+@socketio.on('call_plugin')
+def call_plugin(data):
+    plugin_name = data['plugin_name']
+    command = data['command']
+    process = subprocess.Popen([_env.python_path ,"-u","call_plugin_chain.py",command, plugin_name], stdout=subprocess.PIPE, stderr=subprocess.PIPE , bufsize=0)
     # 创建一个空集合，用于存放已经结束的文件对象
     pipe_process_to_socket_io(process,request.sid)
     print("end")
