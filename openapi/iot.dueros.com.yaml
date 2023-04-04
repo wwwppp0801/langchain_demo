@@ -5,11 +5,112 @@ info:
   version: 'v1'
 servers:
   - url: http://127.0.0.1:8002
+components:
+  schemas:
+    plan:
+      type: object
+      properties:
+        name:
+          type: string
+          required: true
+          description: 'short summary of this plan, MUST in chinese, up to 5 Chinese characters'
+        time:
+          type: string
+          required: false
+          description: 'format:```{hour}:{minutes}```, eg: ```22:06```. The {hour} field is on a 24-hour basis. No this field means "now".'
+        date:
+          type: string
+          required: false
+          description: 'format:```{year}-{month}-{day}```, eg: ```2023-03-26```.  Only valid when repeat=="none". No this field means "today".'
+        repeat:
+          type: string
+          enum: [ workday, restday, everyday, spring, summer, fall, winter, none ]
+          required: true
+          description: >
+            How this plan will be repeated :
+              * `workday` - any day that you work.
+              * `restday` - any day that you rest.
+              * `everyday` - everyday
+              * `spring` - one of the four temperate seasons. lasting from March to May north of the equator, and from September to November south of the equator.
+              * `summer` - one of the four temperate seasons. lasting from June to Augest north of the equator, and from December to February south of the equator.
+              * `fall` - one of the four temperate seasons. lasting from September to November north of the equator, and from March to May south of the equator.
+              * `winter` - one of the four temperate seasons. lasting from December to February north of the equator, and from June to Augest south of the equator.
+              * `none` - no repeat.
+        action:
+          type: string
+          enum: [ alarm, curtain, aircondition, light ]
+          required: true
+          description: >
+            Which device to control :
+              * `alarm` - Can schedule a new alarm in alarm clock
+              * `curtain` - Can control electric curtains to open or close
+              * `aircondition` - Can control air conditioner's temperature and state
+              * `light` - Can control a light on/off
+        aircondition:
+          type: object
+          required: false
+          description: only valid when action=="aircondition"
+          properties:
+            temperature:
+              type: integer
+              description: Celsius temperature.
+            method:
+              type: string
+              enum: [ cooling, heating, close ]
+              description: >
+                state of an air conditioner:
+                  * `cooling` -  cooling the air in a room.
+                  * `heating` -  heating the air in a room
+                  * `close` -  close the air conditioner
+        curtain:
+          type: object
+          required: false
+          description: only valid when action=="curtain"
+          properties:
+            method:
+              type: string
+              enum: [ open, close ]
+        light:
+          type: object
+          required: false
+          description: only valid when action=="light"
+          properties:
+            name: 
+              type: string
+              description: the name of light. this name is set by user, usually in chinese
+            method:
+              type: string
+              enum: [ open, close ]
 paths:
-  /iotPlan:
+#  /iotPlan:
+#    post:
+#      operationId: iotPlan
+#      summary: add A new control plan, for only ONE iot device
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/plan'
+#      responses:
+#        "200":
+#          description: OK
+#          content:
+#            application/json:
+#              schema:
+#                type: object
+#                properties:
+#                  status:
+#                    type: integer
+#                    required: true
+#                    description: 0 means success, others means fail
+#                  id:
+#                    type: integer
+#                    description: the plan id, which was added by the request
+  /iotPlans:
     post:
-      operationId: iotPlan
-      summary: add A new control plan, for only ONE iot device
+      operationId: iotPlans
+      summary: add new control plan list
       requestBody:
         required: true
         content:
@@ -17,73 +118,41 @@ paths:
             schema:
               type: object
               properties:
-                time:
-                  type: string
-                  required: false
-                  description: 'format:```{hour}:{minutes}```, eg: ```22:06```. The {hour} field is on a 24-hour basis. No this field means "now".'
-                date:
-                  type: string
-                  required: false
-                  description: 'format:```{year}-{month}-{day}```, eg: ```2023-03-26```.  Only valid when repeat=="none". No this field means "today".'
-                repeat:
-                  type: string
-                  enum: [ workday, restday, everyday, spring, summer, fall, winter, none ]
-                  required: true
-                  description: >
-                    How this plan will be repeated :
-                      * `workday` - any day that you work.
-                      * `restday` - any day that you rest.
-                      * `everyday` - everyday
-                      * `spring` - one of the four temperate seasons. lasting from March to May north of the equator, and from September to November south of the equator.
-                      * `summer` - one of the four temperate seasons. lasting from June to Augest north of the equator, and from December to February south of the equator.
-                      * `fall` - one of the four temperate seasons. lasting from September to November north of the equator, and from March to May south of the equator.
-                      * `winter` - one of the four temperate seasons. lasting from December to February north of the equator, and from June to Augest south of the equator.
-                      * `none` - no repeat.
-                action:
-                  type: string
-                  enum: [ alarm, curtain, aircondition, light ]
-                  required: true
-                  description: >
-                    Which device to control :
-                      * `alarm` - Can schedule a new alarm in alarm clock
-                      * `curtain` - Can control electric curtains to open or close
-                      * `aircondition` - Can control air conditioner's temperature and state
-                      * `light` - Can control a light on/off
-                aircondition:
-                  type: object
-                  required: false
-                  description: only valid when action=="aircondition"
-                  properties:
-                    temperature:
-                      type: integer
-                      description: Celsius temperature.
-                    method:
-                      type: string
-                      enum: [ cooling, heating, close ]
-                      description: >
-                        state of an air conditioner:
-                          * `cooling` -  cooling the air in a room.
-                          * `heating` -  heating the air in a room
-                          * `close` -  close the air conditioner
-                curtain:
-                  type: object
-                  required: false
-                  description: only valid when action=="curtain"
-                  properties:
-                    method:
-                      type: string
-                      enum: [ open, close ]
-                light:
-                  type: object
-                  required: false
-                  description: only valid when action=="light"
-                  properties:
-                    name: 
-                      type: string
-                      description: the name of light. this name is set by user, usually in chinese
-                    method:
-                      type: string
-                      enum: [ open, close ]
+                plans:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/plan'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    required: true
+                    description: 0 means success, others means fail
+                  id_list:
+                    type: array
+                    items: integer
+                    description: the plans id list, which were added by the request
+  /deleteIotPlans:
+    post:
+      operationId: deleteIotPlans
+      summary: delete control plan list
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_list:
+                  type: array
+                  items: integer
+                  description: the plans id list, which will be deleted
       responses:
         "200":
           description: OK

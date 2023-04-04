@@ -114,7 +114,10 @@ class CallPluginAgent(ZeroShotAgent):
             if not match:
                 #return "Final Answer","<not for sure>" + llm_output
                 #强制生成一个final answer
-                return "generate","now i can summarize the answer\n"
+
+                #return "generate","now i can summarize the answer\n"
+                return "Final Answer", llm_output
+
                 #if "final answer" in llm_output:
                 #    return "Final Answer", llm_output
                 #if "Final answer" in llm_output:
@@ -123,6 +126,8 @@ class CallPluginAgent(ZeroShotAgent):
             action = match.group(1).strip()
             action = extract_real_action(action)
             action_input = match.group(2).strip("\n \"\t`")
+            if action_input.startswith("json"):
+                action_input=action_input[4:]
             return action, action_input
         return get_action_and_input(text)
     
@@ -216,6 +221,10 @@ Thought: you should always think about what to do, better in chinese
 Action: one operationId of api. you can only call ONE api at a time. Only clean api operationId are included, no colloquial expressions.
 Action Input: "parameters" and "requestBody" of api calling, which is encoding in json format . You can only send ONE request at a time . MUST be include in api document
 Observation: the result of the api calling
+Thought: ...
+Action: ...
+Action Input: ...
+Observation: ...
 ... (this Thought/Action/Action/Observation can repeat N times, N>0)
 Thought: I now know the final answer
 Final Answer: the final answer to the original input question, better in chinese
@@ -280,17 +289,17 @@ class CallPluginAgentExecutor(AgentExecutor):
                 observation_prefix=self.agent.observation_prefix,
             )
         else:
-            observation = InvalidTool().run(
-                output.tool,
-                verbose=self.verbose,
-                color=None,
-                llm_prefix="",
-                observation_prefix=self.agent.observation_prefix,
-            )
-            return_direct = False
-        if return_direct:
-            # Set the log to "" because we do not want to log it.
-            return AgentFinish({self.agent.return_values[0]: observation}, "")
+#            observation = InvalidTool().run(
+#                output.tool,
+#                verbose=self.verbose,
+#                color=None,
+#                llm_prefix="",
+#                observation_prefix=self.agent.observation_prefix,
+#            )
+#            return_direct = False
+#        if return_direct:
+#            # Set the log to "" because we do not want to log it.
+            return AgentFinish({self.agent.return_values[0]: "任务已完成"}, "")
         return output, observation
     @classmethod
     def from_agent_and_plugin_name(

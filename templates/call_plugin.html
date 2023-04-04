@@ -29,6 +29,10 @@
                         </div>
                         {% endfor %}
                     </div>
+                    <div class="form-group col-md-10 d-flex align-items-center">
+                        <input type="text" class="form-control" id="session_id" placeholder="session id">
+                        <button type="button" id="refresh_session_id" class="btn btn-primary">session name</button>
+                    </div>
                 </form>
             </div>
 
@@ -48,6 +52,19 @@
 
         <!-- Custom script -->
         <script>
+            function formatDate(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                const seconds = String(date.getSeconds()).padStart(2, '0');
+                return `${year}-${month}-${day}-${hours}-${minutes}-${seconds}`;
+            }
+            $("#session_id").val(formatDate(new Date()));
+            $("#refresh_session_id").click(function(){
+                $("#session_id").val(formatDate(new Date()));
+            });
             let page_id=new Date().getTime()+Math.random();
             
             function getToolValues(){
@@ -83,7 +100,7 @@
                 var command = input.value;
                 if (command) {
                     // Send the command to the server
-                    socket.emit('call_plugin', {command: command,plugin_name:getToolValues(),page_id});
+                    socket.emit('call_plugin', {command: command,plugin_name:getToolValues(),"session_id":$("#session_id").val(),page_id});
                     // Clear the input field
                     input.value = '';
                 }

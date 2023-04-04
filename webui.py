@@ -6,6 +6,7 @@ from flask import Flask, render_template, Response, request
 import flask
 import subprocess 
 import json
+import random
 
 from flask_socketio import SocketIO
 
@@ -160,7 +161,8 @@ def file_question(data):
 def call_plugin(data):
     plugin_name = data['plugin_name']
     command = data['command']
-    process = subprocess.Popen([_env.python_path ,"-u","call_plugin_chain.py",command, plugin_name], stdout=subprocess.PIPE, stderr=subprocess.PIPE , bufsize=0)
+    session_id = data['session_id']
+    process = subprocess.Popen([_env.python_path ,"-u","call_plugin_chain.py",command, plugin_name,session_id], stdout=subprocess.PIPE, stderr=subprocess.PIPE , bufsize=0)
     # 创建一个空集合，用于存放已经结束的文件对象
     pipe_process_to_socket_io(process,request.sid)
     print("end")
@@ -208,6 +210,33 @@ def addToCart():
 @app.route("/iotPlan", methods=["POST"])
 def iotPlan():
     print(request.data)
+    result = json.dumps({"id":random.randint(1000, 9999),"status":0})
+    # 返回JSON数据
+    return Response(result, mimetype='application/json')
+
+### mock dueros iot api
+@app.route("/iotPlans", methods=["POST"])
+def iotPlans():
+    try:
+        req=json.loads(request.data)
+        assert(req['plans'] is not None)
+    except:
+        return Response(json.dumps({"status":-1}), mimetype='application/json')
+    result=[]
+    for i in range(len(req['plans'])):
+        result.append(random.randint(1000, 9999))
+    result_str = json.dumps({"id_list":result,"status":0})
+    # 返回JSON数据
+    return Response(result_str, mimetype='application/json')
+
+### mock dueros iot api
+@app.route("/deleteIotPlans", methods=["POST"])
+def deleteIotPlans():
+    try:
+        req=json.loads(request.data)
+        assert(req['id_list'] is not None)
+    except:
+        return Response(json.dumps({"status":-1}), mimetype='application/json')
     result = json.dumps({"status":0})
     # 返回JSON数据
     return Response(result, mimetype='application/json')
