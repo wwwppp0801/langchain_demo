@@ -10,6 +10,10 @@ components:
     plan:
       type: object
       properties:
+        id:
+          type: integer
+          required: false
+          description: 'id of a plan. If id is empty, will create a new plan. If id is not empty, will modify a exist plan'
         name:
           type: string
           required: true
@@ -110,7 +114,7 @@ paths:
   /iotPlans:
     post:
       operationId: iotPlans
-      summary: add new control plan list
+      summary: add or modify control plan list
       requestBody:
         required: true
         content:

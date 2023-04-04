@@ -224,7 +224,10 @@ def iotPlans():
         return Response(json.dumps({"status":-1}), mimetype='application/json')
     result=[]
     for i in range(len(req['plans'])):
-        result.append(random.randint(1000, 9999))
+        if  "id" in req['plans'][i]:
+            result.append(req['plans'][i]['id'])
+        else:
+            result.append(random.randint(1000, 9999))
     result_str = json.dumps({"id_list":result,"status":0})
     # 返回JSON数据
     return Response(result_str, mimetype='application/json')
