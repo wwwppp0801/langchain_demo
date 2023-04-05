@@ -119,9 +119,12 @@ def run_test_cases_index():
 def call_plugin_index():
     # render a template with a div element for displaying output and an input element and a button for submitting name parameter
     return render_template("call_plugin.html",
-                           plugin_names=["iot.dueros.com",
-                                         "jd.com",
-                                         "www.Klarna.com"],
+                           plugin_names=[
+                               "iot2.dueros.com",
+                               "iot.dueros.com",
+                               "jd.com",
+                               "www.Klarna.com"
+                               ],
                            nav_tabs=get_nav_tabs(request.path),
                            )
 
@@ -243,6 +246,58 @@ def deleteIotPlans():
     result = json.dumps({"status":0})
     # 返回JSON数据
     return Response(result, mimetype='application/json')
+
+
+### mock dueros iot api
+@app.route("/createOrUpdateIotScenes", methods=["POST"])
+def createOrUpdateIotScenes():
+    try:
+        req=json.loads(request.data)
+        assert(req['scenes'] is not None)
+    except:
+        return Response(json.dumps({"status":-1}), mimetype='application/json')
+    result=[]
+    for i in range(len(req['scenes'])):
+        if  "id" in req['scenes'][i]:
+            result.append(req['scenes'][i]['id'])
+        else:
+            result.append(random.randint(1000, 9999))
+    result_str = json.dumps({"id_list":result,"status":0})
+    # 返回JSON数据
+    return Response(result_str, mimetype='application/json')
+
+### mock dueros iot api
+@app.route("/getIotDevices", methods=["POST"])
+def getIotDevices():
+    try:
+        req=json.loads(request.data)
+    except:
+        return Response(json.dumps({"status":-1}), mimetype='application/json')
+    results=[
+            {"id":"12344", "name":"卧室的音箱", "type":"speaker","room":"卧室",},
+            {"id":"12345", "name":"卧室的空调", "type":"aircondition","room":"卧室",},
+            {"id":"12346", "name":"卧室的吸顶灯", "type":"light","room":"卧室",},
+            {"id":"12347", "name":"卧室的台灯", "type":"light","room":"卧室",},
+            {"id":"12348", "name":"卧室的加湿器", "type":"humidifier","room":"卧室",},
+            {"id":"12349", "name":"卧室的温度传感器", "type":"temperature_sensor","room":"卧室",},
+            {"id":"12350", "name":"卧室的窗帘", "type":"curtain","room":"卧室",},
+
+            {"id":"12344", "name":"客厅的音箱", "type":"speaker","room":"客厅",},
+            {"id":"12355", "name":"客厅的空调", "type":"aircondition","room":"客厅",},
+            {"id":"12356", "name":"客厅的吸顶灯", "type":"light","room":"客厅",},
+            {"id":"12357", "name":"客厅的台灯", "type":"light","room":"客厅",},
+            {"id":"12358", "name":"客厅的加湿器", "type":"humidifier","room":"客厅",},
+            {"id":"12359", "name":"客厅的温度传感器", "type":"temperature_sensor","room":"客厅",},
+            {"id":"12360", "name":"客厅的窗帘", "type":"curtain","room":"客厅",},
+             ]
+    for i in range(len(req['scenes'])):
+        if  "id" in req['scenes'][i]:
+            result.append(req['scenes'][i]['id'])
+        else:
+            result.append(random.randint(1000, 9999))
+    result_str = json.dumps({"id_list":result,"status":0})
+    # 返回JSON数据
+    return Response(result_str, mimetype='application/json')
 
 
 
