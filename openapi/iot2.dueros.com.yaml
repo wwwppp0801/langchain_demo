@@ -1,51 +1,46 @@
 openapi: 3.0.1
 info:
   title: DuerOS Iot
-  description: DuerOS Iot plugin. Can help you develop an automatic control scene, with iot devices in your home. Iot devices include lights, air conditioners, smart speakers, Temperature sensor, humidity sensor, light sensor, curtain
+  description: DuerOS Iot plugin. Can help you develop an automatic control scene, with iot devices in your home. Iot devices include lights, air conditioners, smart speakers, temperature sensor, humidity sensor, light sensor, curtain
   version: 'v1'
 servers:
-  - url: http://127.0.0.1:8002/iot2
+  - url: http://127.0.0.1:8002/
 components:
   schemas:
     scene:
       type: object
       properties:
-        sceneId:
+        id:
           type: string
           required: false
-          description: 'The identifier of a scene. If sceneId is empty, will create a new scene. If sceneId is not empty, will update a exist scene.'
+          description: 'The identifier of a scene. If id is empty, will create a new scene. If id is not empty, will update a exist scene.'
         sceneName:
           type: string
           required: true
-          description: 'short summary of this scene, MUST in chinese, up to 5 Chinese characters'
-        trigers:
+          description: 'Short summary of this scene, MUST in chinese, up to 5 Chinese characters'
+        triggers:
           type: array
           required: false
-          description: 'when user declared how the scene is trigered, this filed should has value. otherwise it can be not existed. element of this filed show one way to triger the scene, either which one element is statisfied, the scene can be executed'
+          description: 'Triggers of the scene. Each trigger can trigger scene execution'
           items:
             type: object
-            description: 'element of conditions array. one element meas a condition should be satisfied when the scene is executed'
+            description: 'Define one trigger'
             required: false
             properties:
               type:
                 type: string
                 required: true
-                enum: [ deviceCondition, enableTime ]
+                enum: [ switch, doorUnlock, doorLock, humanPass, timer ]
                 description: >
-                  deviceState - a state the device is in
-                  enableTime - which time the scene can be executed
-              state:
+                  switch - Triggered when the switch device is pressed
+                  doorUnlock - Triggered when the smart door lock is opened
+                  doorLock - Triggered when the smart door lock is closed
+                  humanPass - Triggered when the body sensor sense a person
+                  timer - Triggered when the set time is up
+              deviceId:
                 type: string
                 required: false
-                enum: [ on, off]
-                description: >
-                  when value of type filed is deviceState, this field is required
-                  on - the device is opened
-                  off - the device is closed
-              appliance_id:
-                type: string
-                required: false
-                description: 'id of a device given in prompt, the scene should contain real id in prompt'
+                description: 'The id of the device generating the event'
               time:
                 type: string
                 required: false
@@ -54,49 +49,12 @@ components:
                 type: string
                 required: false
                 description: 'format:```{year}-{month}-{day}```, eg: ```2023-03-26```.  Only valid when repeat=="none". No this field means "today".'
-        conditions:
-          type: array
-          required: false
-          description: 'one element of conditions  array describe the condition which should be satisfied when the scene executed or trigered. all the conditions should be satisfied if this field exist. where conditions not exist, there is no limit on the scene'
-          items:
-            type: object
-            description: 'element of trigers array. show the scene can be execute. it have diffent ways, we can use type filed of the object to distinguish diffent triger way'
-            required: false
-            properties:
-              type:
-                type: string
-                required: true
-                enum: [ event, time ]
-                description: >
-                  event - when some devices has some event or in some state, the scene can be executed. 
-                  time - when setted time comes, the scene should be executed'
-              action:
-                type: string
-                required: false
-                enum: [ click, doorUnlock, doorLock, humanPass]
-                description: >
-                  click - a switch's button is clicked. 
-                  doorUnlock - a door is opened by some people
-                  doorLock - a dorr is locked by some people
-                  humanPass - human senser detect human pass
-              id:
-                type: string
-                required: true
-                description: 'id of a device given in prompt, the scene should contain real id in prompt'
-              beginTime:
-                type: string
-                required: false
-                description: 'when value of type filed is time, this field is required, this filed is required. format:```{hour}:{minutes}```, eg: ```22:06```. The {hour} field is on a 24-hour basis. No this field means "now". decribe the begin of time zone the scene can be executed'
-              endTime:
-                type: string
-                required: false
-                description: 'when value of type filed is time, this field is required, this filed is required. format:```{hour}:{minutes}```, eg: ```22:06```. The {hour} field is on a 24-hour basis. No this field means "now". decribe the end of time zone the scene can be executed'
               repeat:
                 type: string
                 enum: [ workday, restday, everyday, spring, summer, fall, winter, none ]
                 required: true
                 description: >
-                  How this scene will be repeated :
+                  How this trigger will be repeated :
                     * `workday` - any day that you work.
                     * `restday` - any day that you rest.
                     * `everyday` - everyday
@@ -105,6 +63,42 @@ components:
                     * `fall` - one of the four temperate seasons. lasting from September to November north of the equator, and from March to May south of the equator.
                     * `winter` - one of the four temperate seasons. lasting from December to February north of the equator, and from June to Augest south of the equator.
                     * `none` - no repeat.
+        conditions:
+          type: array
+          required: false
+          description: 'The conditions that must be met for the execution of the scene, all conditions within the array must be met.'
+          items:
+            type: object
+            description: 'Define of condition'
+            required: false
+            properties:
+              type:
+                type: string
+                required: true
+                enum: [ deviceState, enableTimePeriod ]
+                description: >
+                  deviceState - The device state in which this scene can be executed
+                  enableTimePeriod - The time period in which this scene can be executed
+              state:
+                type: string
+                required: false
+                enum: [ on, off]
+                description: >
+                  Only valid when type=="deviceState".
+                  on - the device is opened
+                  off - the device is closed
+              deviceId:
+                type: string
+                required: false
+                description: 'Only valid when type=="deviceState".'
+              beginTime:
+                type: string
+                required: false
+                description: 'Only valid when type=="enableTimePeriod". Describe the begin of time period. format:```{hour}:{minutes}```, eg: ```22:06```. The {hour} field is on a 24-hour basis. No this field means "now".'
+              endTime:
+                type: string
+                required: false
+                description: 'Only valid when type=="enableTimePeriod". Describe the end of time period. format:```{hour}:{minutes}```, eg: ```22:06```. The {hour} field is on a 24-hour basis. No this field means "now".'
         actions:
           type: array
           required: true
@@ -120,14 +114,16 @@ components:
                 enum: [ alarm, tts, music, light, curtain, aircondition, humidifier]
                 description: >
                   alarm - set a alarm for user 
-                  tts - generate a voice audio to a speaker, which given in the devicelist of the prompt
-                  music - play music on speaker
-                  light - do some operations on a light device
-                  aircondition - do some operations on a aircondition, such as open, adjust the temperature,mode,or fanSpeed
+                  tts -  play voice audio on a speaker
+                  music - play music on a speaker
+                  light - do some operations on a light device.
+                  aircondition - do some operations on a aircondition
+                  humidifier -  do some operations on a humidifier
+                  curtain - do some operations on a curtain
               tts:
                 type: string
                 required: false
-                description: 'when the type field value is tts, the value of this field is the text to generate a audio'
+                description: 'Only valid when type=="tts". Text to generate voice.'
               musicStyle:
                 type: string
                 required: false
@@ -136,55 +132,67 @@ components:
                   in the prompt we can find the value of cuid, means the device id of a given speaker. when the type filed value ismusic, thsi field should have value
                   白噪声 - means nature noise to help sleep
                   助眠 -  means some soft music to help sleep
-              id:
+              deviceId:
                 type: string
                 required: false
-                description: 'id of a device given in prompt, the scene should contain real id in prompt. when the type field value is light, curtain, aircondition, humidifier, this filed is required. '
+                description: 'The id of the device to be controlled'
               onOffState:
                 type: string
                 required: false
                 enum: [on, off]
                 description: >
-                  when the type field value is light, curtain, aircondition, humidifier, this filed has meanings
+                  Only valid when type in [ light, curtain, aircondition, humidifier ].
                   on - open a device
                   off - close a device
               colorTemperature:
-                type: string
+                type: integer
+                minimum: 0
+                maximum: 100
                 required: false
                 description: >
-                  when the type field value is light, this filed has meanings
-                  value is the percent of light color temperature, such as 50% of the range of color temperature supported by the light
+                  Only valid when type in [ light ].
+                  value is the percent of light color temperature.
               brightness:
-                type: string
+                type: integer
+                minimum: 0
+                maximum: 100
                 required: false
                 description: >
-                  when the type field value is light, this filed has meanings
-                  value is the percent of light brightness, such as 50% of the range of brightness supported by the light
+                  Only valid when type in [ light ].
+                  value is the percent of light brightness.
               turnOnPercent:
-                type: string
+                type: integer
+                minimum: 0
+                maximum: 100
                 required: false
                 description: >
-                  when the type field value is curtain, this filed has meanings
-                  value is the percent of curtain open. such as 0%, means the curtain is closed, 100% means the curtain is complete opened, 50% means the curtain is half opened.
+                  Only valid when type in [ curtain ].
+                  Percentage of curtain opening level. 0 means the curtain is closed, 100 means the curtain is complete opened.
               temperature:
-                type: string
+                type: integer
+                minimum: 16
+                maximum: 35
                 required: false
                 description: >
-                  when the type field value is aircondition, this filed has meanings
-                  Celsius temperature, min value is 16, max value is 35
-              mode:
+                  Only valid when type in [ aircondition ].
+                  Celsius temperature.
+              aircondition_mode:
                 type: string
                 required: false
+                enum: [ cooling ,heating, stableTemperature ]
                 description: >
-                  when the type field value is aircondition or humidifier, this filed has meanings
-                  aircondition has mode:cooling ,heating, stableTemperature. stableTemperature means the temperature keep stable and unchangeable
-                humidifier has mode: stableHumidity. stableHumidity means the humidity keep stable and unchangeable
+                  Only valid when type in [ aircondition ].
+                  cooling - Cooling mode
+                  heating - Heating mode
+                  stableTemperature - constant temperature mode
               humidity:
-                type: string
+                type: integer
+                minimum: 0
+                maximum: 100
                 required: false
                 description: >
-                  when the type field value is humidifier, this filed has meanings
-                  value is the percent of humidifier, value range is 0% to 100%
+                  Only valid when type in [ humidifier ].
+                  Percentage of humidity level.
 
 paths:
   /createOrUpdateIotScenes:
@@ -217,4 +225,4 @@ paths:
                   id_list:
                     type: array
                     items: integer
-                    description: the sceneId list, which were created or updated  by the request
+                    description: the scene id list, which were created or updated  by the request
