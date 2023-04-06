@@ -7,6 +7,33 @@ servers:
   - url: http://127.0.0.1:8002/
 components:
   schemas:
+    iotDevice:
+      type: object
+      properties:
+        id:
+          type: string
+          required: true
+          description: the identifier of iot device
+        type:
+          type: string
+          required: true
+          enum: [speaker, light, aircondition, curtain, humidifier, humidity_sensor, temperature_sensor, light_sensor ]
+          description: >
+            speaker - Smart speaker. Can play voice or music. Can set alarm clock on it.
+            light - Can be opened or closed. Have ability to adjust color temperature and brightness.
+            aircondition - Cooling and heating air conditioners.
+            humidifier - Can adjust the humidity of the room.
+            humidity_sensor - Can sense the humidity of the room.
+            temperature_sensor - Can sense the temperature of the room.
+            light_sensor - Can sense the intensity of light in the room.
+        name:
+          type: string
+          required: true
+          description: the user defined name of the device
+        room:
+          type: string
+          required: true
+          description: Name of the room where the device is located
     scene:
       type: object
       properties:
@@ -30,13 +57,13 @@ components:
               type:
                 type: string
                 required: true
-                enum: [ switch, doorUnlock, doorLock, humanPass, timer ]
+                enum: [ time, switch, doorUnlock, doorLock, humanPass ]
                 description: >
+                  time - Triggered when the set time is up
                   switch - Triggered when the switch device is pressed
                   doorUnlock - Triggered when the smart door lock is opened
                   doorLock - Triggered when the smart door lock is closed
                   humanPass - Triggered when the body sensor sense a person
-                  timer - Triggered when the set time is up
               deviceId:
                 type: string
                 required: false
@@ -113,9 +140,9 @@ components:
                 required: true
                 enum: [ alarm, tts, music, light, curtain, aircondition, humidifier]
                 description: >
-                  alarm - set a alarm for user 
-                  tts -  play voice audio on a speaker
-                  music - play music on a speaker
+                  alarm - set an alarm clock on smart speaker 
+                  tts -  play voice audio on a smart speaker
+                  music - play music on a smart speaker
                   light - do some operations on a light device.
                   aircondition - do some operations on a aircondition
                   humidifier -  do some operations on a humidifier
@@ -141,7 +168,7 @@ components:
                 required: false
                 enum: [on, off]
                 description: >
-                  Only valid when type in [ light, curtain, aircondition, humidifier ].
+                  Only valid when type in [ light, aircondition, humidifier ].
                   on - open a device
                   off - close a device
               colorTemperature:
@@ -226,32 +253,7 @@ paths:
 #                    type: array
 #                    description: iot devices
 #                    items: 
-#                      type: object
-#                      properties:
-#                        id:
-#                          type: string
-#                          required: true
-#                          description: the identifier of iot device
-#                        type:
-#                          type: string
-#                          required: true
-#                          enum: [speaker, light, aircondition, curtain, humidifier, humidity_sensor, temperature_sensor, light_sensor ]
-#                          description: >
-#                            speaker - Can play voice or music.
-#                            light - Can be opened or closed. Have ability to adjust color temperature and brightness.
-#                            aircondition - Cooling and heating air conditioners.
-#                            humidifier - Can adjust the humidity of the room.
-#                            humidity_sensor - Can sense the humidity of the room.
-#                            temperature_sensor - Can sense the temperature of the room.
-#                            light_sensor - Can sense the intensity of light in the room.
-#                        name:
-#                          type: string
-#                          required: true
-#                          description: the user defined name of the device
-#                        room:
-#                          type: string
-#                          required: true
-#                          description: Name of the room where the device is located
+#                    $ref: "#/components/schemas/iotDevice"
 #
   /createOrUpdateIotScenes:
     post:

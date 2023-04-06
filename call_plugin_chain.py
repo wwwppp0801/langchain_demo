@@ -70,8 +70,7 @@ if __name__ == '__main__':
                 {"id":"12360", "name":"客厅的窗帘", "type":"curtain","room":"客厅",},
                 ],ensure_ascii=False)
         content="""context:
-* device_list: 
-{my_devices}
+{{"iotDeviceList":{my_devices}}}
 """
         content=content.format(my_devices=my_devices)
         llm.prefix_messages.insert(0,{
