@@ -148,6 +148,16 @@ def get_nav_tabs(path:str):
     return nav_tabs
 
 
+### mock dueros iot api
+@app.route("/sample_data", methods=["GET"])
+def sample_data():
+    import sample_data
+
+    result = json.dumps({"iotDevices":sample_data.iotDevices},ensure_ascii=False,indent=4)
+    # 返回JSON数据
+    return Response(result, mimetype='application/json')
+
+
 @socketio.on('file_question')
 def file_question(data):
     filename = data['filename']
@@ -258,7 +268,7 @@ def createOrUpdateIotScenes():
         return Response(json.dumps({"status":-1}), mimetype='application/json')
     result=[]
     for i in range(len(req['scenes'])):
-        if  "id" in req['scenes'][i]:
+        if  "id" in req['scenes'][i] and len(req['scenes'][i]['id'])>0:
             result.append(req['scenes'][i]['id'])
         else:
             result.append(random.randint(1000, 9999))
@@ -273,23 +283,8 @@ def getIotDevices():
         req=json.loads(request.data)
     except:
         return Response(json.dumps({"status":-1}), mimetype='application/json')
-    results=[
-            {"id":"12344", "name":"卧室的音箱", "type":"speaker","room":"卧室",},
-            {"id":"12345", "name":"卧室的空调", "type":"aircondition","room":"卧室",},
-            {"id":"12346", "name":"卧室的吸顶灯", "type":"light","room":"卧室",},
-            {"id":"12347", "name":"卧室的台灯", "type":"light","room":"卧室",},
-            {"id":"12348", "name":"卧室的加湿器", "type":"humidifier","room":"卧室",},
-            {"id":"12349", "name":"卧室的温度传感器", "type":"temperature_sensor","room":"卧室",},
-            {"id":"12350", "name":"卧室的窗帘", "type":"curtain","room":"卧室",},
-
-            {"id":"12344", "name":"客厅的音箱", "type":"speaker","room":"客厅",},
-            {"id":"12355", "name":"客厅的空调", "type":"aircondition","room":"客厅",},
-            {"id":"12356", "name":"客厅的吸顶灯", "type":"light","room":"客厅",},
-            {"id":"12357", "name":"客厅的台灯", "type":"light","room":"客厅",},
-            {"id":"12358", "name":"客厅的加湿器", "type":"humidifier","room":"客厅",},
-            {"id":"12359", "name":"客厅的温度传感器", "type":"temperature_sensor","room":"客厅",},
-            {"id":"12360", "name":"客厅的窗帘", "type":"curtain","room":"客厅",},
-             ]
+    import sample_data
+    results=sample_data.iotDevices
     for i in range(len(req['scenes'])):
         if  "id" in req['scenes'][i]:
             result.append(req['scenes'][i]['id'])
@@ -298,6 +293,7 @@ def getIotDevices():
     result_str = json.dumps({"id_list":result,"status":0})
     # 返回JSON数据
     return Response(result_str, mimetype='application/json')
+
 
 
 
