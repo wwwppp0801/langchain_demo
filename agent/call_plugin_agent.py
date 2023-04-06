@@ -83,7 +83,7 @@ def get_tools_from_api_doc(api_doc:Dict)->List[BaseTool]:
 class CallPluginAgent(ZeroShotAgent):
     """Agent for the CallPlugin."""
 
-    plugin_name:str=None
+    plugin_profile:Dict=None
 
     @property
     def observation_prefix(self) -> str:
@@ -157,29 +157,32 @@ class CallPluginAgent(ZeroShotAgent):
     def from_llm_and_plugin(
         cls,
         llm: BaseLLM,
-        plugin_name: str,
+        plugin_name: str = None,
+        plugin_profile: Dict = None,
         callback_manager: Optional[BaseCallbackManager] = None,
         **kwargs: Any,
     ) -> Agent:
         
-        manifest_doc=cls.read_file(f"{plugin_name}.json")
-        api_doc=cls.read_file(f"{plugin_name}.yaml")
+        if plugin_profile is None:
+            plugin_profile={}
+            plugin_profile['manifest_doc']=cls.read_file(f"{plugin_name}.json")
+            plugin_profile['api_doc']=cls.read_file(f"{plugin_name}.yaml")
 
 
         prompt = cls.create_prompt(
-            manifest_doc=manifest_doc,
-            api_doc=api_doc
+            manifest_doc=plugin_profile['manifest_doc'],
+            api_doc=plugin_profile['api_doc'],
         )
         llm_chain = LLMChain(
             llm=llm,
             prompt=prompt,
             callback_manager=callback_manager,
         )
-        tools=get_tools_from_api_doc(api_doc=api_doc)
+        tools=get_tools_from_api_doc(api_doc=plugin_profile['api_doc'])
 
         tool_names = [tool.name for tool in tools]
         obj=cls(llm_chain=llm_chain, allowed_tools=tool_names, **kwargs)
-        obj.plugin_name=plugin_name
+        obj.plugin_profile=plugin_profile
         return obj
         
         #return cls(llm_chain=llm_chain, allowed_tools=[], **kwargs)
@@ -203,8 +206,8 @@ Thought:{agent_scratchpad}"""
     def create_system_prompt(
         self,
     ) -> str:
-        manifest_doc=self.read_file(f"{self.plugin_name}.json")
-        api_doc=self.read_file(f"{self.plugin_name}.yaml")
+        manifest_doc=self.plugin_profile['manifest_doc']
+        api_doc=self.plugin_profile['api_doc']
 
         print("manifest_doc:",json.dumps(manifest_doc,indent=4),file=sys.stderr)
         print("api_doc",json.dumps(api_doc,indent=4),file=sys.stderr)
@@ -305,14 +308,18 @@ class CallPluginAgentExecutor(AgentExecutor):
     def from_agent_and_plugin_name(
         cls,
         agent: Agent,
-        plugin_name: str,
+        plugin_name: str = None,
+        plugin_profile: Dict = None,
         callback_manager: Optional[BaseCallbackManager] = None,
         **kwargs: Any,
     ) -> AgentExecutor:
         """Create from agent and tools."""
-        api_doc=CallPluginAgent.read_file(f"{plugin_name}.yaml")
+        if plugin_profile is None:
+            api_doc=CallPluginAgent.read_file(f"{plugin_name}.yaml")
+        else:
+            api_doc=plugin_profile['api_doc']
         return cls(
-            agent=agent, tools=get_tools_from_api_doc(api_doc), callback_manager=callback_manager,plugin_name=plugin_name, **kwargs
+            agent=agent, tools=get_tools_from_api_doc(api_doc), callback_manager=callback_manager, **kwargs
         )
 if __name__=="__main__":
     # plugin_name="www.wolframalpha.com"
@@ -332,7 +339,7 @@ if __name__=="__main__":
 
 
     plugin_name="iot.dueros.com"
-    query="我每天早上7点半一定要起床，不然会赶不上地铁，周末可以晚一些，大改9点左右，干脆就9点半吧。白天家里一般没有人，帮我把窗帘拉上。"
+    query="我每天早上7点半一定要起床，不然会赶不上地铁，周末可以晚一些，大改9点左右，干脆就9点半吧。帮我设一下闹钟。白天家里一般没有人，帮我把窗帘拉上。"
 
     
 
@@ -359,13 +366,28 @@ if __name__=="__main__":
     llm = OpenAI(model_name=_env.model_name, temperature=0.0,openai_api_key=_env.api_key)
 
 
-    llm = OpenAI(model_name=_env.model_name, temperature=0.0,
-             openai_api_key=_env.api_key)
-    
     print(query)
+#    agent = CallPluginAgent.from_llm_and_plugin(
+#        llm, plugin_name, verbose=True
+#    )
+#
+#    
+#    llm.prefix_messages = [{
+#        "role": "system",
+#        "content": agent.create_system_prompt()
+#    },]
+#
+#    executer = CallPluginAgentExecutor.from_agent_and_plugin_name(
+#        agent=agent,
+#        plugin_name=plugin_name,
+#        verbose=True,
+#    )
+
+    import plugin_profiles.profiles as profiles 
+    plugin_profile=profiles.read_profile("sample")
     agent = CallPluginAgent.from_llm_and_plugin(
-        llm, plugin_name, verbose=True
-    )
+            llm, plugin_profile=plugin_profile, verbose=True
+            )
 
     
     llm.prefix_messages = [{
@@ -375,9 +397,11 @@ if __name__=="__main__":
 
     executer = CallPluginAgentExecutor.from_agent_and_plugin_name(
         agent=agent,
-        plugin_name=plugin_name,
+        plugin_profile=plugin_profile,
         verbose=True,
     )
+
+
     executer.max_iterations=4
     
     executer.run(query)

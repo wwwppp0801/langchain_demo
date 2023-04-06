@@ -82,6 +82,8 @@ def upload():
         file = request.files["file"]
         # 检查文件是否存在并且合法
         if file and file.filename:
+            if file.filename in ["plugin_example.zip"]:
+                return f"<p style='color:red'> <b>{file.filename}</b> 已经存在，请换个文件名 </p>"
             # 保存文件到指定目录
             file.save(os.path.join(app.config["UPLOAD_FOLDER"], file.filename))
             # 返回成功信息和下载链接
@@ -175,7 +177,12 @@ def call_plugin(data):
     plugin_name = data['plugin_name']
     command = data['command']
     session_id = data['session_id']
-    process = subprocess.Popen([_env.python_path ,"-u","call_plugin_chain.py",command, plugin_name,session_id], stdout=subprocess.PIPE, stderr=subprocess.PIPE , bufsize=0)
+    plugin_file = data['plugin_file']
+    if plugin_file and plugin_file!='':
+        filename="./upload/"+plugin_file
+        import plugin_profiles.profiles as profiles
+        profiles.unzip_file_to_proile(filename)
+    process = subprocess.Popen([_env.python_path ,"-u","call_plugin_chain.py",command, plugin_name,session_id,plugin_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE , bufsize=0)
     # 创建一个空集合，用于存放已经结束的文件对象
     pipe_process_to_socket_io(process,request.sid)
     print("end")

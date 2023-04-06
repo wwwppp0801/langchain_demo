@@ -15,3 +15,6 @@ iotDevices=[
         {"id":"12359", "name":"客厅的温度传感器", "type":"temperature_sensor","room":"客厅",},
         {"id":"12360", "name":"客厅的窗帘", "type":"curtain","room":"客厅",},
         ]
+if __name__=="__main__":
+    import json
+    print(json.dumps(iotDevices, indent=4, ensure_ascii=False))

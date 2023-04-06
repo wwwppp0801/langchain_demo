@@ -2,9 +2,9 @@ import os
 import configparser
 # 创建一个ConfigParser对象
 config = configparser.ConfigParser()
-
+dirname = os.path.dirname(os.path.realpath(__file__))
 # 读取一个INI文件
-config.read("config.ini")
+config.read(f"{dirname}/config.ini")
 
 # 设置组织ID和API密钥
 #openai.organization=config.get("main", "organization")

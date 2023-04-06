@@ -11,6 +11,7 @@ from langchain.embeddings import OpenAIEmbeddings
 from agent.call_plugin_agent import CallPluginAgent,CallPluginAgentExecutor
 from llm.my_open_ai import MyOpenAIChat
 import time
+import plugin_profiles.profiles as profiles
 
 if __name__ == '__main__': 
     if len(sys.argv)<3:
@@ -32,6 +33,16 @@ if __name__ == '__main__':
         pass
     print("session_id: ",session_id,file=sys.stderr)
     print("session_data: ",json.dumps(session_data,ensure_ascii=False),file=sys.stderr)
+
+    plugin_profile=None
+    if len(sys.argv)>=5:
+        plugin_profile_name=sys.argv[4]
+        if plugin_profile_name:
+            plugin_profile=profiles.read_profile(plugin_profile_name)
+            print("plugin_profile: ",json.dumps(plugin_profile,ensure_ascii=False),file=sys.stderr)
+
+
+
     print(sys.argv,file=sys.stderr)
     
 
@@ -42,7 +53,7 @@ if __name__ == '__main__':
     
     print(command)
     agent = CallPluginAgent.from_llm_and_plugin(
-        llm, plugin_name=plugin_name, verbose=True
+        llm, plugin_name=plugin_name,plugin_profile=plugin_profile, verbose=True
     )
 
 
@@ -51,9 +62,13 @@ if __name__ == '__main__':
         "role": "system",
         "content": agent.create_system_prompt()
     },]
+    my_devices=None
     if plugin_name=="iot2.dueros.com":
         import sample_data
         my_devices=json.dumps(sample_data.iotDevices,ensure_ascii=False)
+    if plugin_profile and 'device_list' in plugin_profile:
+        my_devices=json.dumps(plugin_profile['device_list'],ensure_ascii=False)
+    if my_devices:
         content="""context:
 {{"iotDeviceList":{my_devices}}}
 """
@@ -69,6 +84,7 @@ if __name__ == '__main__':
     executer = CallPluginAgentExecutor.from_agent_and_plugin_name(
         agent=agent,
         plugin_name=plugin_name,
+        plugin_profile=plugin_profile,
         verbose=True,
     )
     executer.max_iterations=4
