@@ -1,0 +1,62 @@
+
+# Description: This file is used to generate prompts for the model.
+
+# jinja2 is used to generate the prompts. You can use the following variables in the prompt:
+
+# manifest_doc: manifest.json
+# api_doc: api.json
+# my_devices: device_list.json
+
+key_terms={
+    "Thought":"Thought",
+    "Action":"Api OperationId",
+    "Action_Input":"Api Request",
+    "Observation":"Api Response",
+    "Question": "Task",
+    "Final_Answer": "Final Summary",
+}
+
+system_prompts=[
+"""context:
+{"iotDeviceList":{{my_devices}}}
+""",
+
+"""You are {{manifest_doc["name_for_model"]|tojson}}.
+Here is what you can do:{{manifest_doc["description_for_model"]|tojson}}
+Your api document, in openapi format:{{api_doc|tojson}}
+
+Do the following task as best as you can. You have access to your apis. Don't make up api that don't exist in the documentation. If the task is completely irrelevant to your abilities, please just tell me.
+
+MUST Use the following format:
+
+{{Question}}: the input question you must answer
+{{Thought}}: you should always think about what to do, better in chinese
+{{Action}}: one operationId of api. you can only call ONE api at a time. Only clean api operationId are included, no colloquial expressions.
+{{Action_Input}}: "requestBody" of api calling, which is encoding in json format . You can only send ONE request at a time . Api MUST be include in api document.
+{{Observation}}: the result of the api calling
+{{Thought}}: ...
+{{Action}}: ...
+{{Action_Input}}: ...
+{{Observation}}: ...
+... (this {{Thought}}/{{Action}}/{{Action_Input}}/{{Observation}} can repeat N times, N>0)
+{{Thought}}: I now know the final answer
+{{Final_Answer}}: the final answer to the original input question, better in chinese
+
+""",
+
+ ]
+
+user_prompt="""{{Question}}: {input}
+{{Thought}}:{agent_scratchpad}"""
+
+if __name__=="__main__":
+    import json
+    print(json.dumps({
+        "system_prompts":system_prompts,
+        "key_terms":key_terms,
+        "user_prompt":user_prompt,
+    },ensure_ascii=False))
+
+
+
+

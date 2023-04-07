@@ -85,12 +85,19 @@ class CallPluginAgent(ZeroShotAgent):
 
     plugin_profile:Dict=None
 
+
+    @property
+    def llm_prefix(self) -> str:
+        """Prefix to append the llm call with."""
+        return self.plugin_profile['prompt']['key_terms']['Thought']+":"
+
     @property
     def observation_prefix(self) -> str:
         """Prefix to append the observation with."""
-        return "Observation:"
+        return self.plugin_profile['prompt']['key_terms']['Observation']+":"
 
     def _extract_tool_and_input(self, text: str) -> Optional[Tuple[str, str]]:
+        key_terms=self.plugin_profile['prompt']["key_terms"]
         def extract_real_action(raw_action:str):
             regex = r"\"(.*?)\""
             match = re.search(regex, raw_action, re.DOTALL)
@@ -98,25 +105,18 @@ class CallPluginAgent(ZeroShotAgent):
                 return match.group(1)
             return raw_action
         def get_action_and_input(llm_output: str) -> Tuple[str, str]:
-            """Parse out the action and input from the LLM output.
 
-            Note: if you're specifying a custom prompt for the ZeroShotAgent,
-            you will need to ensure that it meets the following Regex requirements.
-            The string starting with "Action:" and the following string starting
-            with "Action Input:" should be separated by a newline.
-            """
-
-            FINAL_ANSWER_ACTION = "Final Answer:"
+            FINAL_ANSWER_ACTION = f'{key_terms["Final_Answer"]}:'
             if FINAL_ANSWER_ACTION in llm_output:
-                return "Final Answer", llm_output.split(FINAL_ANSWER_ACTION)[-1].strip()
-            regex = r"Action:(.*?)\nAction Input:(.*)"
-            match = re.search(regex, llm_output, re.DOTALL)
+                return key_terms["Final_Answer"], llm_output.split(FINAL_ANSWER_ACTION)[-1].strip()
+            regex = re.compile(f'{key_terms["Action"]}:(.*?)\n{key_terms["Action_Input"]}:(.*)',re.DOTALL)
+            match = re.search(regex, llm_output)
             if not match:
                 #return "Final Answer","<not for sure>" + llm_output
                 #强制生成一个final answer
 
                 #return "generate","now i can summarize the answer\n"
-                return "Final Answer", llm_output
+                return key_terms["Final_Answer"], llm_output
 
                 #if "final answer" in llm_output:
                 #    return "Final Answer", llm_output
@@ -167,12 +167,50 @@ class CallPluginAgent(ZeroShotAgent):
             plugin_profile={}
             plugin_profile['manifest_doc']=cls.read_file(f"{plugin_name}.json")
             plugin_profile['api_doc']=cls.read_file(f"{plugin_name}.yaml")
+            plugin_profile['prompt']={}
+            plugin_profile['prompt']['key_terms']={
+                "Thought":"Thought",
+                "Action":"Action",
+                "Action_Input":"Action Input",
+                "Observation":"Observation",
+                "Question": "Question",
+                "Final_Answer": "Final Answer",
+            }
+            plugin_profile['prompt']['user_prompt']="""{{Question}}: {input}
+{{Thought}}:{agent_scratchpad}"""
+            plugin_profile['prompt']['system_prompts']=[
+                    """context:
+{"iotDeviceList":{{my_devices}}}
+""",
+
+"""You are {{manifest_doc["name_for_model"]|tojson}}.
+Here is what you can do:{{manifest_doc["description_for_model"]|tojson}}
+Your api document, in openapi format:{{api_doc|tojson}}
+
+Answer the following question as best as you can. You have access to your apis. Don't make up api that don't exist in the documentation :
+
+MUST Use the following format:
+
+{{Question}}: the input question you must answer
+{{Thought}}: you should always think about what to do, better in chinese
+{{Action}}: one operationId of api. you can only call ONE api at a time. Only clean api operationId are included, no colloquial expressions.
+{{Action_Input}}: "parameters" and "requestBody" of api calling, which is encoding in json format . You can only send ONE request at a time . MUST be include in api document
+{{Observation}}: the result of the api calling
+{{Thought}}: ...
+{{Action}}: ...
+{{Action_Input}}: ...
+{{Observation}}: ...
+... (this {{Thought}}/{{Action}}/{{Action_Input}}/{{Observation}} can repeat N times, N>0)
+{{Thought}}: I now know the final answer
+{{Final_Answer}}: the final answer to the original input question, better in chinese
+
+"""
+]
 
 
         prompt = cls.create_prompt(
-            manifest_doc=plugin_profile['manifest_doc'],
-            api_doc=plugin_profile['api_doc'],
-        )
+                plugin_profile=plugin_profile,
+                )
         llm_chain = LLMChain(
             llm=llm,
             prompt=prompt,
@@ -191,13 +229,15 @@ class CallPluginAgent(ZeroShotAgent):
     @classmethod
     def create_prompt(
         cls,
-        manifest_doc: Dict,
-        api_doc: Dict,
+        plugin_profile: Dict,
     ) -> PromptTemplate:
-        """Create prompt in the style of the zero shot agent.
-        """
-        template = """Question: {input}
-Thought:{agent_scratchpad}"""
+        template_str = plugin_profile['prompt']['user_prompt']
+        
+        env = jinja2.Environment(loader=jinja2.BaseLoader)
+        jinja2_template = env.from_string(template_str)
+        _dict=plugin_profile.copy()
+        _dict.update(plugin_profile['prompt']['key_terms'])
+        template= jinja2_template.render(**_dict)
         
         input_variables = ["input", "agent_scratchpad"]
         return PromptTemplate(template=template, input_variables=input_variables)
@@ -205,38 +245,20 @@ Thought:{agent_scratchpad}"""
     
     def create_system_prompt(
         self,
-    ) -> str:
-        manifest_doc=self.plugin_profile['manifest_doc']
-        api_doc=self.plugin_profile['api_doc']
-
-        print("manifest_doc:",json.dumps(manifest_doc,indent=4),file=sys.stderr)
-        print("api_doc",json.dumps(api_doc,indent=4),file=sys.stderr)
-        system_template_str="""You are {{manifest_doc["name_for_model"]|tojson}}.
-Here is what you can do:{{manifest_doc["description_for_model"]|tojson}}
-Your api document, in openapi format:{{api_doc|tojson}}
-
-Answer the following question as best as you can. You have access to your apis. Don't make up api that don't exist in the documentation :
-
-MUST Use the following format:
-
-Question: the input question you must answer
-Thought: you should always think about what to do, better in chinese
-Action: one operationId of api. you can only call ONE api at a time. Only clean api operationId are included, no colloquial expressions.
-Action Input: "parameters" and "requestBody" of api calling, which is encoding in json format . You can only send ONE request at a time . MUST be include in api document
-Observation: the result of the api calling
-Thought: ...
-Action: ...
-Action Input: ...
-Observation: ...
-... (this Thought/Action/Action/Observation can repeat N times, N>0)
-Thought: I now know the final answer
-Final Answer: the final answer to the original input question, better in chinese
-
-"""
+    ) -> List[str]:
         env = jinja2.Environment(loader=jinja2.BaseLoader)
-        template = env.from_string(system_template_str)
-        system_message= template.render(manifest_doc=manifest_doc,api_doc=api_doc)
-        return system_message
+        system_messages = []
+        for system_template_str in self.plugin_profile['prompt']['system_prompts']:
+            template = env.from_string(system_template_str)
+            _dict=self.plugin_profile.copy()
+            _dict.update(self.plugin_profile['prompt']['key_terms'])
+            system_message = template.render(**_dict)
+            system_messages += [{
+                "role": "system",
+                "content": system_message
+            },]
+
+        return system_messages
 
 
 def get_generate_tool(**kwargs: Any) -> BaseTool:
@@ -355,7 +377,7 @@ if __name__=="__main__":
     plugin_name="iot.dueros.com"
     query="我晚上睡觉的时间一般都在11点左右，但偶尔会失眠。所以我基本会在睡前半个小时看会书。如果你有什么好的助眠方法也可以给我"
 
-    plugin_name="iot.dueros.com"
+    plugin_name="iot2.dueros.com"
     query="我每天早上7点半一定要起床，不然会赶不上地铁，周末可以晚一些，大改9点左右，干脆就9点半吧。起床要用闹钟叫醒我。另外，白天家里一般没有人，帮我把窗帘拉上。"
 
 
@@ -384,20 +406,20 @@ if __name__=="__main__":
 #    )
 
     import plugin_profiles.profiles as profiles 
-    plugin_profile=profiles.read_profile("sample")
+    #plugin_profile=profiles.read_profile("sample")
+    plugin_profile=None
     agent = CallPluginAgent.from_llm_and_plugin(
-            llm, plugin_profile=plugin_profile, verbose=True
+            llm, plugin_profile=plugin_profile, verbose=True,
+            plugin_name=plugin_name
             )
 
     
-    llm.prefix_messages = [{
-        "role": "system",
-        "content": agent.create_system_prompt()
-    },]
+    llm.prefix_messages = agent.create_system_prompt()
 
     executer = CallPluginAgentExecutor.from_agent_and_plugin_name(
         agent=agent,
         plugin_profile=plugin_profile,
+        plugin_name=plugin_name,
         verbose=True,
     )
 

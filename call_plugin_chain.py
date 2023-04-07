@@ -1,6 +1,6 @@
 import _env
 import openai
-openai.log="debug"
+#openai.log="debug"
 from langchain.llms import OpenAI
 from tools import file_search_tool 
 import sys
@@ -20,6 +20,7 @@ if __name__ == '__main__':
         quit()
     command=sys.argv[1]
     plugin_name=sys.argv[2]
+
     if len(sys.argv)>=4:
         session_id=sys.argv[3]
     else:
@@ -32,14 +33,17 @@ if __name__ == '__main__':
     except:
         pass
     print("session_id: ",session_id,file=sys.stderr)
-    print("session_data: ",json.dumps(session_data,ensure_ascii=False),file=sys.stderr)
+    #print("session_data: ",json.dumps(session_data,ensure_ascii=False),file=sys.stderr)
 
     plugin_profile=None
+    if plugin_name=="iot2.dueros.com":
+        plugin_profile=profiles.read_profile("built-in/iot2.dueros.com")
     if len(sys.argv)>=5:
         plugin_profile_name=sys.argv[4]
         if plugin_profile_name:
             plugin_profile=profiles.read_profile(plugin_profile_name)
             print("plugin_profile: ",json.dumps(plugin_profile,ensure_ascii=False),file=sys.stderr)
+            #print("plugin_profile: ",json.dumps(plugin_profile_name,ensure_ascii=False),file=sys.stderr)
 
 
 
@@ -49,6 +53,8 @@ if __name__ == '__main__':
 
 
     llm = MyOpenAIChat(model_name=_env.model_name, temperature=0.0,
+            request_timeout=60000,
+            timeout=60000,
              openai_api_key=_env.api_key)
     
     print(command)
@@ -58,25 +64,27 @@ if __name__ == '__main__':
 
 
     
-    llm.prefix_messages = [{
-        "role": "system",
-        "content": agent.create_system_prompt()
-    },]
-    my_devices=None
-    if plugin_name=="iot2.dueros.com":
-        import sample_data
-        my_devices=json.dumps(sample_data.iotDevices,ensure_ascii=False)
-    if plugin_profile and 'device_list' in plugin_profile:
-        my_devices=json.dumps(plugin_profile['device_list'],ensure_ascii=False)
-    if my_devices:
-        content="""context:
-{{"iotDeviceList":{my_devices}}}
-"""
-        content=content.format(my_devices=my_devices)
-        llm.prefix_messages.insert(0,{
-            "role": "system",
-            "content": content,
-        })
+#    llm.prefix_messages = [{
+#        "role": "system",
+#        "content": agent.create_system_prompt()
+#    },]
+#    my_devices=None
+#    if plugin_name=="iot2.dueros.com":
+#        import sample_data
+#        my_devices=json.dumps(sample_data.iotDevices,ensure_ascii=False)
+#    if plugin_profile and 'device_list' in plugin_profile:
+#        my_devices=json.dumps(plugin_profile['device_list'],ensure_ascii=False)
+#    if my_devices:
+#        content="""context:
+#{{"iotDeviceList":{my_devices}}}
+#"""
+#        content=content.format(my_devices=my_devices)
+#        llm.prefix_messages.insert(0,{
+#            "role": "system",
+#            "content": content,
+#        })
+    llm.prefix_messages = agent.create_system_prompt()
+    
     if session_data is not None and 'prefix_messages' in session_data:
         llm.prefix_messages=session_data['prefix_messages']
 

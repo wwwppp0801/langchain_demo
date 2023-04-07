@@ -36,32 +36,122 @@ app.config["UPLOAD_FOLDER"]=UPLOAD_FOLDER
 
 
 import select
+import queue
+import threading
 
 def pipe_process_to_socket_io(process,sid):
     stdout = process.stdout
     stderr = process.stderr
+    result=[]
+    errorlog=[]
     
-    done = set()
+    #done = set()
+    #
+    ## 循环直到两个文件对象都结束
+    #while done != {stdout, stderr}:
+    #    # 用select模块来检查哪些文件对象有可读数据
+    #    rlist, _, _ = select.select([stdout, stderr], [], [])
+    #    # 遍历可读的文件对象
+    #    for f in rlist:
+    #        # 读取一行数据
+    #        line = f.readline()
+    #        # 如果数据为空，说明文件对象已经结束，将其加入done集合
+    #        if not line:
+    #            done.add(f)
+    #        # 否则，根据是stdout还是stderr来输出数据，并加上前缀以区分
+    #        else:
+    #            if f == stdout:
+    #                socketio.emit('result', {'line': line.decode()}, room=sid)
+    #                print (line)
+    #            if f == stderr:
+    #                socketio.emit('errorlog', {'line': line.decode()}, room=sid)
+    #                print (line)
+    
+    # 定义一个函数，用于从流中读取数据并加到队列中
+    def read_stream(stream, q,label):
+        try:
+            for line in stream:
+                q.put([label,line])
+            stream.close()
+        except ValueError:
+            print("read error")
 
-    # 循环直到两个文件对象都结束
-    while done != {stdout, stderr}:
-        # 用select模块来检查哪些文件对象有可读数据
-        rlist, _, _ = select.select([stdout, stderr], [], [])
-        # 遍历可读的文件对象
-        for f in rlist:
-            # 读取一行数据
-            line = f.readline()
-            # 如果数据为空，说明文件对象已经结束，将其加入done集合
-            if not line:
-                done.add(f)
-            # 否则，根据是stdout还是stderr来输出数据，并加上前缀以区分
-            else:
-                if f == stdout:
-                    socketio.emit('result', {'line': line.decode()}, room=sid)
-                    print (line)
-                if f == stderr:
-                    socketio.emit('errorlog', {'line': line.decode()}, room=sid)
-                    print (line)
+    # 定义一个函数，用于从队列中读取数据并处理结果
+    def process_queue(q):
+        while True:
+            obj = q.get()
+            if obj is None: # 队列为空，退出循环
+                break
+            label,line=obj
+            #print(line.decode().strip()) # 打印结果
+            if label=="stdout":
+                ## result.append(ansi_escape(line.decode()))
+                print(line.decode())
+                socketio.emit('result', {'line': line.decode()}, room=sid)
+            if label=="stderr":
+                print(line.decode())
+                ## errorlog.append(line.decode())
+                socketio.emit('errorlog', {'line': line.decode()}, room=sid)
+            q.task_done()
+    
+    q = queue.Queue()
+    # 创建两个子线程，分别读取stdout和stderr的值，并加到队列中
+    t1 = threading.Thread(target=read_stream, args=(process.stdout, q,"stdout"))
+    t2 = threading.Thread(target=read_stream, args=(process.stderr, q,"stderr"))
+    t1.daemon=True
+    t2.daemon=True
+    t1.start()
+    t2.start()
+
+    # 创建一个主线程，从队列中读取数据并处理结果
+    t3 = threading.Thread(target=process_queue, args=(q,))
+    t3.start()
+
+    # 定义一个超时时间（秒）
+    timeout = 180
+
+    # 记录开始时间
+    start_time = time.time()
+
+    # 循环检查进程是否结束或超时
+    while True:
+        # 如果进程已经结束，退出循环
+        if process.poll() is not None:
+            break
+        # 如果超过了超时时间，终止进程并退出循环
+        if time.time() - start_time > timeout:
+            process.terminate()
+            process.stdout.close()
+            process.stderr.close()
+            print("进程超时，已终止")
+            t1.join()
+            t2.join()
+            q.put(None)
+
+            # 等待主线程结束
+            t3.join()
+            print("进程超时，已终止")
+            return "timeout error", "".join(result)
+            break
+#        else:
+#            print("time spent:"+str(time.time() - start_time) )
+        time.sleep(1)
+
+    # 等待进程结束，并关闭所有流
+    process.wait()
+    process.stdout.close()
+    process.stderr.close()
+
+    # 等待子线程结束，并向队列发送None信号
+    t1.join()
+    t2.join()
+    q.put(None)
+
+    # 等待主线程结束
+    t3.join()
+    ret= "".join(result),"".join(errorlog)
+    print(ret)
+    return ret
 
 @socketio.on('submit')
 def handle_submit(data):
@@ -182,7 +272,10 @@ def call_plugin(data):
         filename="./upload/"+plugin_file
         import plugin_profiles.profiles as profiles
         profiles.unzip_file_to_proile(filename)
-    process = subprocess.Popen([_env.python_path ,"-u","call_plugin_chain.py",command, plugin_name,session_id,plugin_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE , bufsize=0)
+    command_line=[_env.python_path ,"-u","call_plugin_chain.py",command, plugin_name,session_id,plugin_file]
+    print(command_line)
+    socketio.emit('errorlog', {'line': command_line}, room=request.sid)
+    process = subprocess.Popen(command_line, stdout=subprocess.PIPE, stderr=subprocess.PIPE , bufsize=0)
     # 创建一个空集合，用于存放已经结束的文件对象
     pipe_process_to_socket_io(process,request.sid)
     print("end")

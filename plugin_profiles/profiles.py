@@ -3,6 +3,7 @@ import os
 import json
 import zipfile
 import yaml
+import subprocess
 
 def read_file(filename):
     """read file"""
@@ -22,6 +23,17 @@ def read_file(filename):
 
     raise Exception(f"can not read file {filename}")
 
+def run_python_code(filename):
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+    import _env
+    #print([_env.python_path,filename])
+    p = subprocess.Popen([_env.python_path,filename], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = p.communicate()
+    output = out.decode() + err.decode()
+    if output.strip(" \t\n")=="":
+        output="no print out answers"
+    return output
+
 def read_profile(profile_name):
     dirname=os.path.dirname(os.path.abspath(__file__))+"/"+profile_name
     files={
@@ -37,6 +49,18 @@ def read_profile(profile_name):
             print(log)
             raise FileNotFoundError(log)
         result[key]=read_file(file)
+
+    # read system prompts
+    prompt_py=f'{dirname}/prompt'
+    #print(prompt_py)
+    if os.path.exists(prompt_py):
+        try:
+            prompt_raw=run_python_code(prompt_py)
+            prompt=json.loads(prompt_raw)
+            result["prompt"]=prompt
+        except Exception as e:
+            print(e,file=sys.stderr)
+
     return result
 
 def unzip_file_to_proile(zip_path):
