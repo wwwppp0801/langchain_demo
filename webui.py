@@ -361,18 +361,22 @@ def deleteIotPlans():
 ### mock dueros iot api
 @app.route("/createOrUpdateIotScenes", methods=["POST"])
 def createOrUpdateIotScenes():
+    messages=[]
     try:
         req=json.loads(request.data)
         assert(req['scenes'] is not None)
     except:
-        return Response(json.dumps({"status":-1}), mimetype='application/json')
+        return Response(json.dumps({"status":-1,message:"scene参数不存在"}), mimetype='application/json')
     result=[]
     for i in range(len(req['scenes'])):
         if  "id" in req['scenes'][i] and len(req['scenes'][i]['id'])>0:
+            messages+=[f"覆盖修改了场景，id为{id}"]
             result.append(req['scenes'][i]['id'])
         else:
-            result.append(random.randint(1000, 9999))
-    result_str = json.dumps({"id_list":result,"status":0})
+            id=str(random.randint(1000, 9999))
+            messages+=[f"创建了新的场景，id为{id}"]
+            result.append(id)
+    result_str = json.dumps({"id_list":result,"status":0,"message":"\n".join(messages)},ensure_ascii=False)
     # 返回JSON数据
     return Response(result_str, mimetype='application/json')
 
@@ -389,7 +393,7 @@ def getIotDevices():
         if  "id" in req['scenes'][i]:
             result.append(req['scenes'][i]['id'])
         else:
-            result.append(random.randint(1000, 9999))
+            result.append(str(random.randint(1000, 9999)))
     result_str = json.dumps({"id_list":result,"status":0})
     # 返回JSON数据
     return Response(result_str, mimetype='application/json')
