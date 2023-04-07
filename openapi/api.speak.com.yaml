@@ -69,7 +69,7 @@ components:
         learning_language:
           type: string
           required: true
-          description: The foreign language that the user is learning and asking about. Always use the full name of the language (e.g. Spanish, French).
+          description: The foreign language that the user is learning and asking about. Always use the full name of the language in English (e.g. Spanish, French).
         native_language:
           type: string
           required: true

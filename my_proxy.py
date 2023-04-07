@@ -64,7 +64,7 @@ def fetch_request(url, **kwargs):
 
 
     req = tornado.httpclient.HTTPRequest(url, **kwargs)
-    client = tornado.httpclient.AsyncHTTPClient()
+    client = tornado.httpclient.AsyncHTTPClient(defaults=dict(request_timeout=60))
     return client.fetch(req, raise_error=False)
 
 def parse_proxy(proxy):
@@ -90,7 +90,7 @@ class ProxyHandler(tornado.web.RequestHandler):
                 self.parsed_url.scheme == 'https'
 
         # Create a new HTTP client instance
-        self.http_client = tornado.httpclient.AsyncHTTPClient()
+        self.http_client = tornado.httpclient.AsyncHTTPClient(defaults=dict(request_timeout=60))
     
     async def connect(self):
         logger.debug('Start CONNECT to %s', self.request.uri)

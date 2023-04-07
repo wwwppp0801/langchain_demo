@@ -114,7 +114,7 @@ paths:
   /iotPlans:
     post:
       operationId: iotPlans
-      summary: add or modify control plan list
+      summary: add or update control plan list
       requestBody:
         required: true
         content:

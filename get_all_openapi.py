@@ -7,19 +7,26 @@ import time
 import re
 import urllib3
 
+
+### can be found in https://github.com/transitive-bullshit/chatgpt-well-known-plugin-finder
+
 _openapis=[
-"https://www.expedia.com",
-"https://fiscalnote.com",
-"https://www.instacart.com",
-"https://www.kayak.com",
-"https://www.klarna.com",
-"https://www.joinmilo.com",
-"https://www.opentable.com",
-"https://www.shopify.com",
+#"https://www.expedia.com",
+#"https://fiscalnote.com",
+#"https://www.instacart.com",
+#"https://www.kayak.com",
+#"https://www.opentable.com",
+#"https://www.shopify.com",
 "https://slack.com",
-"https://www.speak.com",
-"https://www.wolframalpha.com",
+"https://www.klarna.com",
 "https://zapier.com",
+#"https://pricerunner.se",
+"https://www.wolframalpha.com",
+"https://www.wolframcloud.com",
+"https://api.speak.com",
+#"https://x6lq6i-5001.csb.app",
+"https://datasette.io",
+"https://www.joinmilo.com",
         ]
 if not os.path.exists("openapi"):
     os.makedirs("openapi")

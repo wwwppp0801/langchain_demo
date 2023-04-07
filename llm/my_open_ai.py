@@ -9,5 +9,6 @@ class MyOpenAIChat(OpenAIChat):
              ) -> Tuple:
         messages, params = super()._get_chat_params(prompts=prompts, stop=stop)
         self.last_messages = messages
+        params['request_timeout']=60000
         return messages,params
 

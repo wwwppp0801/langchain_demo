@@ -40,7 +40,7 @@ components:
         id:
           type: string
           required: false
-          description: 'The identifier of a scene. If id is empty, will create a new scene. If id is not empty, will update a exist scene.'
+          description: 'The identifier of a scene, which is created by server. If id is empty, will create a new scene. If id is not empty, will update a exist scene.'
         sceneName:
           type: string
           required: true
