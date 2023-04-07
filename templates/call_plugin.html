@@ -31,10 +31,7 @@
                     </div>
                     <div class="form-group col-md-10 d-flex align-items-center">
                         <input type="text" class="form-control" id="session_id" placeholder="session id">
-                        <button type="button" id="refresh_session_id" class="btn btn-primary">session name</button>
-                    </div>
-                    <div class="form-group col-md-10 d-flex align-items-center">
-                        <a href="/sample_data" target="_blank">测试iot设备列表</a>
+                        <button type="button" id="refresh_session_id" class="btn btn-primary">refresh session</button>
                     </div>
                 </form>
             </div>
@@ -98,6 +95,7 @@
                             success: function(data) {
                                 // 如果成功，显示返回的信息
                                 $("#result").html(data);
+                                $("#session_id").val(formatDate(new Date()));
                             },
                             error: function(xhr, status, error) {
                                 // 如果失败，显示错误信息
