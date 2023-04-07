@@ -123,13 +123,36 @@ class CallPluginAgent(ZeroShotAgent):
                 #if "Final answer" in llm_output:
                 #    return "Final Answer", llm_output
                 #raise ValueError(f"Could not parse LLM output: `{llm_output}`")
+            before_action = llm_output[:match.start()]
             action = match.group(1).strip()
             action = extract_real_action(action)
             action_input = match.group(2).strip("\n \"\t`")
             if action_input.startswith("json"):
                 action_input=action_input[4:]
-            return action, action_input
+            ## 压缩json里的空格
+            try:
+                action_input=json.dumps(json.loads(action_input),ensure_ascii=False)
+            except Exception as e:
+                pass
+            return action, action_input , f'{before_action}{key_terms["Action"]}: {action}\n{key_terms["Action_Input"]}: \n```\n{action_input}\n```\n'
         return get_action_and_input(text)
+    
+    def _get_next_action(self, full_inputs: Dict[str, str]) -> AgentAction:
+        full_output = self.llm_chain.predict(**full_inputs)
+        parsed_output = self._extract_tool_and_input(full_output)
+        while parsed_output is None:
+            full_output = self._fix_text(full_output)
+            full_inputs["agent_scratchpad"] += full_output
+            output = self.llm_chain.predict(**full_inputs)
+            full_output += output
+            parsed_output = self._extract_tool_and_input(full_output)
+        
+        if len(parsed_output)>2:
+            full_output=parsed_output[2]
+        
+        return AgentAction(
+            tool=parsed_output[0], tool_input=parsed_output[1], log=full_output
+        )
     
     @classmethod
     def read_file(cls, filename):
@@ -234,6 +257,7 @@ MUST Use the following format:
         template_str = plugin_profile['prompt']['user_prompt']
         
         env = jinja2.Environment(loader=jinja2.BaseLoader)
+        env.policies['json.dumps_kwargs']['ensure_ascii']=False
         jinja2_template = env.from_string(template_str)
         _dict=plugin_profile.copy()
         _dict.update(plugin_profile['prompt']['key_terms'])
@@ -247,6 +271,7 @@ MUST Use the following format:
         self,
     ) -> List[str]:
         env = jinja2.Environment(loader=jinja2.BaseLoader)
+        env.policies['json.dumps_kwargs']['ensure_ascii']=False
         system_messages = []
         for system_template_str in self.plugin_profile['prompt']['system_prompts']:
             template = env.from_string(system_template_str)

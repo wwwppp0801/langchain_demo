@@ -212,6 +212,8 @@
                                 }).join("\n")
                                 $(output).append(html);
                             }
+
+                            $(output).append("<pre>"+JSON.stringify(json,null,2)+"</pre>");
                         }catch(e){}
                     }
                 }
