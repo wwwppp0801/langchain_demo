@@ -39,7 +39,7 @@ def read_profile(profile_name):
     files={
             "manifest_doc":"manifest.json",
             "api_doc":"api.yaml",
-            "device_list":"device_list.json"
+            "my_devices":"device_list.json"
             }
     result={}
     for key in files.keys():

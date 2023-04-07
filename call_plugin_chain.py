@@ -1,6 +1,6 @@
 import _env
 import openai
-#openai.log="debug"
+openai.log="debug"
 from langchain.llms import OpenAI
 from tools import file_search_tool 
 import sys
