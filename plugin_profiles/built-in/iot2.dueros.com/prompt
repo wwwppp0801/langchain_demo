@@ -47,7 +47,7 @@ MUST Use the following format:
 
  ]
 
-user_prompt="""{{Question}}: {input}
+user_prompt="""{{Question}}: 根据以下用户输入，创建一个iot控制场景："{input}"
 {{Thought}}:{agent_scratchpad}"""
 
 if __name__=="__main__":
