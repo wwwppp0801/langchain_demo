@@ -267,15 +267,23 @@ def call_plugin(data):
     plugin_name = data['plugin_name']
     command = data['command']
     session_id = data['session_id']
+    api_key = data['api_key']
+
+    env = None
+    if api_key and api_key!='':
+        env = {}
+        env["OPENAI_API_BASE"] = "https://api.openai.com/v1"
+
     plugin_file = data['plugin_file']
     if plugin_file and plugin_file!='':
         filename="./upload/"+plugin_file
         import plugin_profiles.profiles as profiles
         profiles.unzip_file_to_proile(filename)
-    command_line=[_env.python_path ,"-u","call_plugin_chain.py",command, plugin_name,session_id,plugin_file]
+
+    command_line=[_env.python_path ,"-u","call_plugin_chain.py",command, plugin_name,session_id,plugin_file,api_key]
     print(command_line)
     socketio.emit('errorlog', {'line': command_line}, room=request.sid)
-    process = subprocess.Popen(command_line, stdout=subprocess.PIPE, stderr=subprocess.PIPE , bufsize=0)
+    process = subprocess.Popen(command_line, stdout=subprocess.PIPE, stderr=subprocess.PIPE , bufsize=0,env=env)
     # 创建一个空集合，用于存放已经结束的文件对象
     pipe_process_to_socket_io(process,request.sid)
     print("end")

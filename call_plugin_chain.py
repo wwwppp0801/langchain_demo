@@ -44,6 +44,10 @@ if __name__ == '__main__':
             plugin_profile=profiles.read_profile(plugin_profile_name)
             print("plugin_profile: ",json.dumps(plugin_profile,ensure_ascii=False),file=sys.stderr)
             #print("plugin_profile: ",json.dumps(plugin_profile_name,ensure_ascii=False),file=sys.stderr)
+    if len(sys.argv)>=6 and sys.argv[5]!="":
+        api_key=sys.argv[5]
+        _env.api_key=api_key
+        openai.api_key=api_key
 
 
 

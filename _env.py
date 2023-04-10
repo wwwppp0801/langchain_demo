@@ -30,11 +30,12 @@ port=config.get("main","port")
 
 ### 少锋的代理
 if openai_api_base:
-    os.environ["OPENAI_API_BASE"]=openai_api_base
+    if "OPENAI_API_BASE" not in os.environ:
+        os.environ["OPENAI_API_BASE"]=openai_api_base
     import openai
     openai.api_key="xxxxxxxxxxx"
 else:
     import openai
-    openai.organization=config.get("main", "organization")
+    #openai.organization=config.get("main", "organization")
     openai.api_key=config.get("main", "api_key")
 
