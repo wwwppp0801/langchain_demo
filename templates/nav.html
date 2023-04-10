@@ -1,0 +1,8 @@
+
+            <header class="d-flex py-3">
+                <ul class="nav nav-pills">
+                    {% for nav in nav_tabs %}
+                        <li class="nav-item"><a href="{{ nav.path }}" class="nav-link {% if nav.active %}active{% endif %}">{{ nav.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </header>

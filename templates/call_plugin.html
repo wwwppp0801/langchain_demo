@@ -7,13 +7,7 @@
     </head>
     <body>
         <div class="container">
-            <header class="d-flex py-3">
-                <ul class="nav nav-pills">
-                    {% for nav in nav_tabs %}
-                        <li class="nav-item"><a href="{{ nav.path }}" class="nav-link {% if nav.active %}active{% endif %}">{{ nav.name }}</a></li>
-                    {% endfor %}
-                </ul>
-            </header>
+            {% include 'nav.html' %}
             <div class="row mt-1">
                 <form id="form" action="#">
                     <div class="form-group col-md-10 d-flex align-items-center">
