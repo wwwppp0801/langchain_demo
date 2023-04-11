@@ -49,6 +49,12 @@ if __name__ == '__main__':
         _env.api_key=api_key
         openai.api_key=api_key
 
+    ### use user_id to get device list
+    if len(sys.argv)>=7 and sys.argv[6]!="":
+        user_id=sys.argv[6]
+        plugin_profile['my_devices']=plugin_profile['devices_db'][user_id]
+        
+
 
 
     print(sys.argv,file=sys.stderr)

@@ -24,6 +24,7 @@ def index():
     return render_template("index.html",
                            nav_tabs=get_nav_tabs(request.path),)
 
+import plugin_profiles.profiles as profiles
 
 
 import os
@@ -268,6 +269,7 @@ def call_plugin(data):
     command = data['command']
     session_id = data['session_id']
     api_key = data['api_key']
+    user_id = data['user_id']
 
     env = None
     if api_key and api_key!='':
@@ -277,10 +279,9 @@ def call_plugin(data):
     plugin_file = data['plugin_file']
     if plugin_file and plugin_file!='':
         filename="./upload/"+plugin_file
-        import plugin_profiles.profiles as profiles
         profiles.unzip_file_to_proile(filename)
 
-    command_line=[_env.python_path ,"-u","call_plugin_chain.py",command, plugin_name,session_id,plugin_file,api_key]
+    command_line=[_env.python_path ,"-u","call_plugin_chain.py",command, plugin_name,session_id,plugin_file,api_key,user_id]
     print(command_line)
     socketio.emit('errorlog', {'line': command_line}, room=request.sid)
     process = subprocess.Popen(command_line, stdout=subprocess.PIPE, stderr=subprocess.PIPE , bufsize=0,env=env)
@@ -406,6 +407,42 @@ def getIotDevices():
     # 返回JSON数据
     return Response(result_str, mimetype='application/json')
 
+### mock dueros iot api
+@app.route("/call_plugin/user_suggestion", methods=["GET"])
+def callPluginUserSuggestion():
+    query = request.args.get('query')
+    plugin_file = request.args.get('plugin_file')
+    plugin_profile=None
+    if plugin_file and plugin_file!='':
+        try:
+            plugin_profile = profiles.read_profile(plugin_file)
+        except FileNotFoundError:
+            filename="./upload/"+plugin_file
+            profiles.unzip_file_to_proile(filename)
+        try:
+            plugin_profile = profiles.read_profile(plugin_file)
+        except FileNotFoundError:
+            pass
+
+    if plugin_profile is None:
+        try:
+            plugin_name = request.args.get('plugin_name')
+            plugin_profile = profiles.read_profile(f"built-in/{plugin_name}")
+        except FileNotFoundError:
+            pass
+
+    if plugin_profile is None:
+        return Response(json.dumps({"status":-1,"message":"插件文件不存在"},ensure_ascii=False), mimetype='application/json')
+
+    devices_db = plugin_profile['devices_db']
+    userids = list(devices_db.keys())
+    filtered_userids=list(filter(lambda x:x.startswith(query),userids))
+    filtered_userids=filtered_userids[:10]
+    suggestions = list(map(lambda x:{"value":x,"data":f"{x} 设备数{len(devices_db[x])}"},filtered_userids))
+    result = json.dumps({"status":0,"suggestions":suggestions},ensure_ascii=False)
+
+    # 返回JSON数据
+    return Response(result, mimetype='application/json')
 
 
 

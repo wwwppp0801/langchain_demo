@@ -36,10 +36,15 @@ def run_python_code(filename):
 
 def read_profile(profile_name):
     dirname=os.path.dirname(os.path.abspath(__file__))+"/"+profile_name
+    if not os.path.exists(dirname):
+        log=f'No profile found: {dirname}'
+        print(log)
+        raise FileNotFoundError(log)
     files={
             "manifest_doc":"manifest.json",
             "api_doc":"api.yaml",
-            "my_devices":"device_list.json"
+            "my_devices":"device_list.json",
+            "devices_db":"devicelist_detail.txt",
             }
     result={}
     for key in files.keys():
