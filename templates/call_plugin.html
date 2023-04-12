@@ -63,6 +63,7 @@
                     <input type="hidden" name="filename" id="filename">
                     <!-- 添加一个提交按钮 -->
                     <input type="submit" value="Upload">
+                    <input type="button" id="checkApiSchema" value="CheckApiSchema">
                 </form>
                 <!-- 显示上传结果 -->
                 <div id="result"></div>
@@ -107,6 +108,32 @@
                 minChars: 0,
             });
 
+            $("#checkApiSchema").click(function(e){
+                e.preventDefault();
+                $.ajax({
+                    url: "/call_plugin/checkApiSchema",
+                    type: "POST",
+                    data: JSON.stringify({
+                        plugin_name:getToolValues(),
+                        plugin_file:filename
+                    }),
+                    contentType: "application/json",
+                    success: function(data) {
+                        // 如果成功，显示返回的信息
+                        $("#result").html("<pre>" + JSON.stringify(data,null,4) + "</pre>");
+                    },
+                    error: function(xhr, status, error) {
+                        // 如果失败，显示错误信息
+                        $("#result").html("<pre>"+JSON.stringify(error,null,4)+"</pre>");
+                    }
+                });
+                $("#result").html("<h4>validating....</h4>");
+
+                // Clear the input field
+                input.value = '';
+
+            
+            });
 
 
             (function(){

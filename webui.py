@@ -7,6 +7,8 @@ import flask
 import subprocess 
 import json
 import random
+import requests
+import json
 
 from flask_socketio import SocketIO
 
@@ -407,11 +409,7 @@ def getIotDevices():
     # 返回JSON数据
     return Response(result_str, mimetype='application/json')
 
-### mock dueros iot api
-@app.route("/call_plugin/user_suggestion", methods=["GET"])
-def callPluginUserSuggestion():
-    query = request.args.get('query')
-    plugin_file = request.args.get('plugin_file')
+def get_plugin_profile(profile_name,plugin_file):
     plugin_profile=None
     if plugin_file and plugin_file!='':
         try:
@@ -426,10 +424,20 @@ def callPluginUserSuggestion():
 
     if plugin_profile is None:
         try:
-            plugin_name = request.args.get('plugin_name')
-            plugin_profile = profiles.read_profile(f"built-in/{plugin_name}")
+            plugin_profile = profiles.read_profile(f"built-in/{profile_name}")
         except FileNotFoundError:
             pass
+
+    return plugin_profile
+
+
+### mock dueros iot api
+@app.route("/call_plugin/user_suggestion", methods=["GET"])
+def callPluginUserSuggestion():
+    query = request.args.get('query')
+
+    
+    plugin_profile = get_plugin_profile( request.args.get('plugin_name'),request.args.get('plugin_file'))
 
     if plugin_profile is None:
         return Response(json.dumps({"status":-1,"message":"插件文件不存在"},ensure_ascii=False), mimetype='application/json')
@@ -445,6 +453,25 @@ def callPluginUserSuggestion():
     return Response(result, mimetype='application/json')
 
 
+### mock dueros iot api
+@app.route("/call_plugin/checkApiSchema", methods=["POST"])
+def callPluginCheckApiSchema():
+    try:
+        req=json.loads(request.data)
+    except:
+        return Response(json.dumps({"status":-1}), mimetype='application/json')
+
+    profile = get_plugin_profile(req['plugin_name'],req['plugin_file'])
+    
+    ##print(json.dumps(profile["api_doc"], indent=4, ensure_ascii=False))
+    ## curl -X POST -d @swagger.json -H 'Content-Type:application/json' https://validator.swagger.io/validator/debug
+    if profile is None:
+        return Response(json.dumps({"status":-1,"message":"插件文件不存在"},ensure_ascii=False), mimetype='application/json')
+    response = requests.post('https://validator.swagger.io/validator/debug', data=json.dumps(profile["api_doc"]), headers={'Content-Type': 'application/json'})
+    result=json.dumps(json.loads(response.text), indent=4, ensure_ascii=False)
+
+    # 返回JSON数据
+    return Response(result, mimetype='application/json')
 
 
 if __name__ == "__main__":
