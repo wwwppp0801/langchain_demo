@@ -5,18 +5,18 @@ info:
   version: 'v1'
 servers:
   - url: http://127.0.0.1:8002/
+
 components:
   schemas:
-    iotDevice:
+    IotDevice:
       type: object
+      required: [id,type,name,room]
       properties:
         id:
           type: string
-          required: true
           description: the identifier of iot device
         type:
           type: string
-          required: true
           enum: [speaker, light, aircondition, curtain, humidifier, humidity_sensor, temperature_sensor, light_sensor ]
           description: >
             speaker - Smart speaker. Can play voice or music. Can set alarm clock on it.
@@ -28,35 +28,30 @@ components:
             light_sensor - Can sense the intensity of light in the room.
         name:
           type: string
-          required: true
           description: the user defined name of the device
         room:
           type: string
-          required: true
           description: Name of the room where the device is located
     scene:
       type: object
+      required: [sceneName,triggers,actions]
       properties:
         id:
           type: string
-          required: false
           description: 'The identifier of a scene, which is created by server. If id is empty, will create a new scene. If id is not empty, will update a exist scene.'
         sceneName:
           type: string
-          required: true
           description: 'Short summary of this scene, MUST in chinese, up to 5 Chinese characters'
         triggers:
           type: array
-          required: false
           description: 'Triggers of the scene. Each trigger can trigger scene execution'
           items:
             type: object
             description: 'Define one trigger'
-            required: false
+            required: [type,repeat]
             properties:
               type:
                 type: string
-                required: true
                 enum: [ time, switch, doorUnlock, doorLock, humanPass ]
                 description: >
                   time - Triggered when the set time is up
@@ -66,20 +61,16 @@ components:
                   humanPass - Triggered when the body sensor sense a person
               deviceId:
                 type: string
-                required: false
                 description: 'The id of the device generating the event'
               time:
                 type: string
-                required: false
                 description: 'when value of type filed is time, this filed is required. format:```{hour}:{minutes}```, eg: ```22:06```. The {hour} field is on a 24-hour basis. No this field means "now".'
               date:
                 type: string
-                required: false
                 description: 'format:```{year}-{month}-{day}```, eg: ```2023-03-26```.  Only valid when repeat=="none". No this field means "today".'
               repeat:
                 type: string
                 enum: [ workday, restday, everyday, spring, summer, fall, winter, none ]
-                required: true
                 description: >
                   On what days will this be triggered :
                   workday - any day that you work.
@@ -90,54 +81,16 @@ components:
                   fall - one of the four temperate seasons. lasting from September to November north of the equator, and from March to May south of the equator.
                   winter - one of the four temperate seasons. lasting from December to February north of the equator, and from June to Augest south of the equator.
                   none - no repeat.
-#        conditions:
-#          type: array
-#          required: false
-#          description: 'The conditions that must be met for the execution of the scene, all conditions within the array must be met.'
-#          items:
-#            type: object
-#            description: 'Define of condition'
-#            required: false
-#            properties:
-#              type:
-#                type: string
-#                required: true
-#                enum: [ deviceState, enableTimePeriod ]
-#                description: >
-#                  deviceState - The device state in which this scene can be executed
-#                  enableTimePeriod - The time period in which this scene can be executed
-#              state:
-#                type: string
-#                required: false
-#                enum: [ on, off]
-#                description: >
-#                  Only valid when type=="deviceState".
-#                  on - the device is opened
-#                  off - the device is closed
-#              deviceId:
-#                type: string
-#                required: false
-#                description: 'Only valid when type=="deviceState".'
-#              beginTime:
-#                type: string
-#                required: false
-#                description: 'Only valid when type=="enableTimePeriod". Describe the begin of time period. format:```{hour}:{minutes}```, eg: ```22:06```. The {hour} field is on a 24-hour basis. No this field means "now".'
-#              endTime:
-#                type: string
-#                required: false
-#                description: 'Only valid when type=="enableTimePeriod". Describe the end of time period. format:```{hour}:{minutes}```, eg: ```22:06```. The {hour} field is on a 24-hour basis. No this field means "now".'
         actions:
           type: array
-          required: true
           description: 'one element of actions  array describe a device action which the scene contains. such as open light, close a curtain'
           items:
             type: object
             description: 'one action of a device'
-            required: false
+            required: [type]
             properties:
               type:
                 type: string
-                required: true
                 enum: [ alarm, tts, music, light, curtain, aircondition, humidifier]
                 description: >
                   alarm - set an alarm clock on smart speaker 
@@ -149,11 +102,9 @@ components:
                   curtain - do some operations on a curtain
               tts:
                 type: string
-                required: false
                 description: 'Only valid when type=="tts". Text to generate voice.'
               musicStyle:
                 type: string
-                required: false
                 enum: [白噪声, 助眠]
                 description: >
                   in the prompt we can find the value of cuid, means the device id of a given speaker. when the type filed value ismusic, thsi field should have value
@@ -161,11 +112,9 @@ components:
                   助眠 -  means some soft music to help sleep
               deviceId:
                 type: string
-                required: false
                 description: 'The id of the device to be controlled'
               onOffState:
                 type: string
-                required: false
                 enum: [on, off]
                 description: >
                   Only valid when type in [ light, aircondition, humidifier ].
@@ -175,7 +124,6 @@ components:
                 type: integer
                 minimum: 0
                 maximum: 100
-                required: false
                 description: >
                   Only valid when type in [ light ].
                   value is the percent of light color temperature.
@@ -183,7 +131,6 @@ components:
                 type: integer
                 minimum: 0
                 maximum: 100
-                required: false
                 description: >
                   Only valid when type in [ light ].
                   value is the percent of light brightness.
@@ -191,7 +138,6 @@ components:
                 type: integer
                 minimum: 0
                 maximum: 100
-                required: false
                 description: >
                   Only valid when type in [ curtain ].
                   Percentage of curtain opening level. 0 means the curtain is closed, 100 means the curtain is complete opened.
@@ -199,13 +145,11 @@ components:
                 type: integer
                 minimum: 16
                 maximum: 35
-                required: false
                 description: >
                   Only valid when type in [ aircondition ].
                   Celsius temperature.
               aircondition_mode:
                 type: string
-                required: false
                 enum: [ cooling ,heating, stableTemperature ]
                 description: >
                   Only valid when type in [ aircondition ].
@@ -216,51 +160,15 @@ components:
                 type: integer
                 minimum: 0
                 maximum: 100
-                required: false
                 description: >
                   Only valid when type in [ humidifier ].
                   Percentage of humidity level.
-
 paths:
-#  /getIotDevices:
-#    post:
-#      operationId: getIotDevices
-#      summary: get iot devices
-#      requestBody:
-#        required: true
-#        content:
-#          application/json:
-#            schema:
-#              type: object
-#              properties:
-#                room:
-#                  type: string
-#                  required: false
-#                  description: Name of the room where the iot device is located. If no this field, means get all iot devices in all rooms.
-#      responses:
-#        "200":
-#          description: OK
-#          content:
-#            application/json:
-#              schema:
-#                type: object
-#                properties:
-#                  status:
-#                    type: integer
-#                    required: true
-#                    description: 0 means success, others means fail
-#                  devices:
-#                    type: array
-#                    description: iot devices
-#                    items: 
-#                    $ref: "#/components/schemas/iotDevice"
-#
   /createOrUpdateIotScenes:
     post:
       operationId: createOrUpdateIotScenes
       summary: add or update iot control scene list
       requestBody:
-        required: true
         content:
           application/json:
             schema:
@@ -280,9 +188,9 @@ paths:
                 properties:
                   status:
                     type: integer
-                    required: true
                     description: 0 means success, others means fail
                   id_list:
                     type: array
-                    items: integer
+                    items:
+                      type: integer
                     description: the scene id list, which were created or updated  by the request

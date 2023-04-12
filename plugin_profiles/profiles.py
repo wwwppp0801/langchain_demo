@@ -83,4 +83,17 @@ def unzip_file_to_proile(zip_path):
     file.close()
 
 
+if __name__ == '__main__':
+    profile_name="built-in/iot2.dueros.com"
+    profile=read_profile(profile_name)
+    print(json.dumps(profile["api_doc"], indent=4, ensure_ascii=False))
+    ## curl -X POST -d @swagger.json -H 'Content-Type:application/json' https://validator.swagger.io/validator/debug
+    import requests
+    import json
+    response = requests.post('https://validator.swagger.io/validator/debug', data=json.dumps(profile["api_doc"]), headers={'Content-Type': 'application/json'})
+    print(json.dumps(json.loads(response.text), indent=4, ensure_ascii=False))
+
+
+
+
 
