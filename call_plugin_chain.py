@@ -2,7 +2,6 @@ import _env
 import openai
 openai.log="debug"
 from langchain.llms import OpenAI
-from tools import file_search_tool 
 import sys
 import json
 
@@ -12,6 +11,14 @@ from agent.call_plugin_agent import CallPluginAgent,CallPluginAgentExecutor
 from llm.my_open_ai import MyOpenAIChat
 import time
 import plugin_profiles.profiles as profiles
+
+import hashlib
+
+def md5(string):
+    m = hashlib.md5()
+    m.update(string.encode('utf-8'))
+    return m.hexdigest()
+
 
 if __name__ == '__main__': 
     if len(sys.argv)<3:
@@ -53,6 +60,14 @@ if __name__ == '__main__':
     if len(sys.argv)>=7 and sys.argv[6]!="":
         user_id=sys.argv[6]
         plugin_profile['my_devices']=plugin_profile['devices_db'][user_id]
+    
+#    if len(sys.argv)>=8 and sys.argv[7]!="":
+#        if sys.argv[7]=="reduce_devices":
+    
+    import iot_device_search
+    plugin_profile['my_devices']=iot_device_search.reduce_devices(command,
+                                                                  plugin_profile['my_devices'],
+                                                                  md5(json.dumps(plugin_profile['my_devices'])))
         
 
 
