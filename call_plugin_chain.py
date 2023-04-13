@@ -63,13 +63,11 @@ if __name__ == '__main__':
     
 #    if len(sys.argv)>=8 and sys.argv[7]!="":
 #        if sys.argv[7]=="reduce_devices":
-    
-    import iot_device_search
-    plugin_profile['my_devices']=iot_device_search.reduce_devices(command,
-                                                                  plugin_profile['my_devices'],
-                                                                  md5(json.dumps(plugin_profile['my_devices'])))
-        
-
+    if _env.embedding_search:    
+        import iot_device_search
+        plugin_profile['my_devices']=iot_device_search.reduce_devices(command,
+                                                                      plugin_profile['my_devices'],
+                                                                      md5(json.dumps(plugin_profile['my_devices'])))
 
 
     print(sys.argv,file=sys.stderr)

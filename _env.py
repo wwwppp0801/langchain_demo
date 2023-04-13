@@ -24,6 +24,8 @@ proxy_logger_port=int(config.get("main","proxy_logger_port",fallback="0"))
 use_proxy_logger=config.get("main","use_proxy_logger",fallback=None)
 proxy_default_backend_server=config.get("main","proxy_default_backend_server",fallback=None)
 
+embedding_search=config.get("main","embedding_search",fallback=None)
+
 python_path=config.get("main","python_path")
 host=config.get("main","host")
 port=config.get("main","port")
