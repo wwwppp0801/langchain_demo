@@ -64,6 +64,10 @@ def get_tools_from_api_doc(api_doc:Dict)->List[BaseTool]:
 
     list=[]
     base_url=api_doc["servers"][0]["url"]
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+    import _env
+    if _env.plugin_base_url:
+        base_url=_env.plugin_base_url
     for path in api_doc["paths"]:
         for method in api_doc["paths"][path]:
             one_api=api_doc["paths"][path][method]
