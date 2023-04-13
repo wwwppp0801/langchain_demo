@@ -18,6 +18,8 @@ def reduce_devices(query,device_list,cached_db_key):
         print("The path exists:"+persist_directory)
         ruff_db = Chroma(collection_name="device_db",persist_directory=persist_directory,embedding_function=embeddings)
     else:
+        print("The path does not exist:"+persist_directory)
+        os.makedirs(persist_directory, exist_ok=True)
         device_texts = [json.dumps(device,ensure_ascii=False) for device in device_list]
         device_metas = [device for device in device_list]
         print("indexed data:")
