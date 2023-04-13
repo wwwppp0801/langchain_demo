@@ -30,6 +30,8 @@ python_path=config.get("main","python_path")
 host=config.get("main","host")
 port=config.get("main","port")
 
+plugin_base_url = config.get("main","plugin_base_url",fallback=None)
+
 ### 少锋的代理
 if openai_api_base:
     if "OPENAI_API_BASE" not in os.environ:
