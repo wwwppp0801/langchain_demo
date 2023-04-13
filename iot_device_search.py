@@ -15,20 +15,21 @@ def reduce_devices(query,device_list,cached_db_key):
     persist_directory="./persist_directory/"+cached_db_key
     embeddings = OpenAIEmbeddings(openai_api_key=_env.api_key)
     if os.path.exists(persist_directory):
-        print("The path exists:"+persist_directory)
+        print("The path exists:"+persist_directory,file=sys.stderr)
         ruff_db = Chroma(collection_name="device_db",persist_directory=persist_directory,embedding_function=embeddings)
     else:
-        print("The path does not exist:"+persist_directory)
+        print("The path does not exist:"+persist_directory,file=sys.stderr)
         os.makedirs(persist_directory, exist_ok=True)
         device_texts = [json.dumps(device,ensure_ascii=False) for device in device_list]
         device_metas = [device for device in device_list]
-        print("indexed data:")
-        print(device_texts)
+        print("indexed data:",file=sys.stderr)
+        print(device_texts,file=sys.stderr)
         ruff_db = Chroma.from_texts(device_texts,embeddings,metadatas=device_metas, collection_name="device_db",persist_directory=persist_directory)
         ruff_db.persist()
 
     docs=ruff_db.similarity_search(query,k=10)
     searched_device_list = [json.loads(doc.page_content) for doc in docs]
+    print("searched device list:"+json.dumps(searched_device_list,ensure_ascii=False),file=sys.stderr)
     return searched_device_list
 
 if __name__ == "__main__":
