@@ -43,7 +43,7 @@ def get_tools_from_api_doc(api_doc:Dict)->List[BaseTool]:
             # if manifest_doc["auth"]["type"]=="service_http":
             #     headers["Authorization"]=f"Bearer {manifest_doc["auth"]}"
 
-            headers = {"Authorization": "Bearer YOUR_ACCESS_TOKEN_HERE"}
+            headers = {"Content-Type": "application/json","Authorization": "Bearer YOUR_ACCESS_TOKEN_HERE"}
             params={}
             if input[0]=="{":
                 params=json.loads(input)
@@ -59,6 +59,7 @@ def get_tools_from_api_doc(api_doc:Dict)->List[BaseTool]:
                 response = requests.delete(url, headers=headers, params=params)
             else:
                 raise ValueError('Unsupported HTTP method: {}'.format(method))
+            print(f"call plugin url:{url}, status_code:{response.status_code}, body:{response.text}",file=sys.stderr)
             return f'status_code:{response.status_code}, body:{response.text}'
         return run
 

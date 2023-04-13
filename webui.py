@@ -377,7 +377,7 @@ def createOrUpdateIotScenes():
         req=json.loads(request.data)
         assert(req['scenes'] is not None)
     except:
-        return Response(json.dumps({"status":-1,message:"scene参数不存在"}), mimetype='application/json')
+        return Response(json.dumps({"status":-1,"message":f"scenes not exists {request.data}"}), mimetype='application/json')
     result=[]
     for i in range(len(req['scenes'])):
         if  "id" in req['scenes'][i] and len(req['scenes'][i]['id'])>0:
