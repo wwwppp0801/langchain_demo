@@ -24,7 +24,7 @@ system_prompts=[
 """You are {{manifest_doc["name_for_model"]|tojson}}.
 Here is what you can do: {{manifest_doc["description_for_model"]|tojson}}
 Your api document, in openapi format: {{api_doc|tojson}}
-Your device list, in iotDevice schema, defined in api doc: {{my_devices|tojson}}
+Your iot device list, in iotDevice format: {{my_devices|tojson}}
 
 Do the following task as best as you can. You have access to your apis. Don't make up api that doesn't exist in the documentation. If the task is completely irrelevant to your abilities, please just tell me "{{Final_Answer}}: 对不起，我没有这个功能".
 

@@ -87,7 +87,7 @@ components:
           items:
             type: object
             description: 'one action of a device'
-            required: [type]
+            required: [deviceId,type]
             properties:
               type:
                 type: string

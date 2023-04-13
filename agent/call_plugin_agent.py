@@ -262,6 +262,7 @@ MUST Use the following format:
         _dict=plugin_profile.copy()
         _dict.update(plugin_profile['prompt']['key_terms'])
         template= jinja2_template.render(**_dict)
+        ##print(_dict,template)
         
         input_variables = ["input", "agent_scratchpad"]
         return PromptTemplate(template=template, input_variables=input_variables)
