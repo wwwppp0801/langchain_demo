@@ -101,6 +101,7 @@
                 },
                 onSelect: function (suggestion) {
                     console.log('You selected: ' + suggestion.value + ', ' + suggestion.data);
+                    $("#session_id").val(formatDate(new Date()));
                 },
                 formatResult: function (suggestion, currentValue) {
                     return suggestion.data;
