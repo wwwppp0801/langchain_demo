@@ -129,6 +129,10 @@ components:
           maximum: 100
           description: >
             Percentage of humidity level.
+    groupName:
+      type: string
+      enum: ["全部","客厅","次卧","客房","卧室","主卧","书房","饭厅","厨房","厕所"]
+      description: The group where the device is located
 
     scene:
       type: object
@@ -160,15 +164,14 @@ components:
               type:
                 type: string
               groupName:
-                type: string
-                description: The group where the device is located, such as ["客厅","卧室","主卧","书房","饭厅","厨房","厕所"]
+                $ref: '#/components/schemas/groupName'
         actions:
           type: array
           description: 'When the trigger is triggered, all actions will be executed.'
           items:
             type: object
             description: 'one action of a device'
-            required: [type]
+            required: [type,name]
             oneOf:
             - $ref: '#/components/schemas/alarm'
             - $ref: '#/components/schemas/light'
@@ -181,6 +184,11 @@ components:
               type:
                 type: string
                 enum: [ alarm, light, curtain, aircondition, humidifier]
+              groupName:
+                $ref: '#/components/schemas/groupName'
+              name:
+                type: string
+                description: User-specified iot device name
 paths:
   /createOrUpdateIotScenes:
     post:

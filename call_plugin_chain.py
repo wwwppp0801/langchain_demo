@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
     plugin_profile=None
     if plugin_name in ["iot2.dueros.com","iot3.dueros.com"]:
-        plugin_profile=profiles.read_profile("built-in/iot2.dueros.com")
+        plugin_profile=profiles.read_profile(f"built-in/{plugin_name}")
     if len(sys.argv)>=5:
         plugin_profile_name=sys.argv[4]
         if plugin_profile_name:
@@ -118,7 +118,7 @@ if __name__ == '__main__':
         plugin_profile=plugin_profile,
         verbose=True,
     )
-    executer.max_iterations=4
+    executer.max_iterations=1
     
     executer.run(command)
 
