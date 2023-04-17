@@ -43,7 +43,7 @@ if __name__ == '__main__':
     #print("session_data: ",json.dumps(session_data,ensure_ascii=False),file=sys.stderr)
 
     plugin_profile=None
-    if plugin_name=="iot2.dueros.com":
+    if plugin_name in ["iot2.dueros.com","iot3.dueros.com"]:
         plugin_profile=profiles.read_profile("built-in/iot2.dueros.com")
     if len(sys.argv)>=5:
         plugin_profile_name=sys.argv[4]

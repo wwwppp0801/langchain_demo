@@ -215,6 +215,7 @@ def call_plugin_index():
     # render a template with a div element for displaying output and an input element and a button for submitting name parameter
     return render_template("call_plugin.html",
                            plugin_names=[
+                               "iot3.dueros.com",
                                "iot2.dueros.com",
                                "iot.dueros.com",
                                "jd.com",

@@ -1,0 +1,214 @@
+openapi: 3.0.1
+info:
+  title: DuerOS Iot
+  description: DuerOS Iot plugin. Can help you develop an automatic control scene, with iot devices in your home. Iot devices include lights, air conditioners, smart speakers, temperature sensor, humidity sensor, light sensor, curtain
+  version: 'v1'
+servers:
+  - url: http://127.0.0.1:8002/
+
+components:
+  schemas:
+    VoiceCommand:
+      type: object
+      required: [ command ]
+      properties:
+        command:
+          type: string
+      description: >
+        Triggered when users give voice commands through smart speakers
+    Time:
+      type: object
+      required: [ repeat, type ]
+      description: >
+        Triggered when the set time is up
+      properties:
+        time:
+          type: string
+          description: 'when value of type filed is time, this filed is required. format:```{hour}:{minutes}```, eg: ```22:06```. The {hour} field is on a 24-hour basis. No this field means "now".'
+        date:
+          type: string
+          description: 'format:```{year}-{month}-{day}```, eg: ```2023-03-26```.  Only valid when repeat=="none". No this field means "today".'
+        repeat:
+          type: string
+          enum: [ workday, restday, everyday, spring, summer, fall, winter, none ]
+          description: >
+            On what days will this be triggered :
+            workday - any day that you work.
+            restday - any day that you rest.
+            everyday - everyday.
+            spring - one of the four temperate seasons. lasting from March to May north of the equator, and from September to November south of the equator.
+            summer - one of the four temperate seasons. lasting from June to Augest north of the equator, and from December to February south of the equator.
+            fall - one of the four temperate seasons. lasting from September to November north of the equator, and from March to May south of the equator.
+            winter - one of the four temperate seasons. lasting from December to February north of the equator, and from June to Augest south of the equator.
+            none - no repeat.
+    Switch:
+      type: object
+      description: >
+        Triggered when the switch device is pressed
+    DoorUnlock:
+      type: object
+      description: >
+        Triggered when the smart door lock is opened
+    DoorLock:
+      type: object
+      description: >
+        Triggered when the smart door lock is closed
+    HumanPass:
+      type: object
+      description: >
+        Triggered when the body sensor sense a person
+    alarm:
+      type: object
+      description: Set an alarm clock. Can play a voice alarm, or music when time is up.
+      properties:
+        tts:
+          type: string
+          description: 'Text to generate voice alarm.'
+        music:
+          type: string
+          description: music name or type to play
+    light:
+      type: object
+      description: Can be opened or closed. Have ability to adjust color temperature and brightness.
+      properties:
+        onOffState:
+          type: string
+          enum: [on, off]
+          description: on - open; off - close a device
+        colorTemperature:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: value is the percent of light color temperature.
+        brightness:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: value is the percent of light brightness.
+    curtain:
+      type: object
+      description: do some operations on a curtain
+      properties:
+        turnOnPercent:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Percentage of curtain opening level. 0 means the curtain is closed, 100 means the curtain is complete opened.
+    aircondition:
+      type: object
+      description: Cooling and heating air conditioners
+      properties:
+        onOffState:
+          type: string
+          enum: [on, off]
+          description: on - open; off - close a device
+        mode:
+          type: string
+          enum: [ cooling ,heating, stableTemperature ]
+          description: >
+            cooling - Cooling mode
+            heating - Heating mode
+            stableTemperature - constant temperature mode
+        temperature:
+          type: integer
+          minimum: 16
+          maximum: 35
+          description: >
+            Celsius temperature.
+    humidifier:
+      type: object
+      description: Can adjust the humidity of the room
+      properties:
+        onOffState:
+          type: string
+          enum: [on, off]
+          description: on - open; off - close a device
+        humidity:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: >
+            Percentage of humidity level.
+
+    scene:
+      type: object
+      required: [sceneName,triggers,actions]
+      properties:
+        id:
+          type: string
+          description: 'The identifier of a scene, which is created by server. If id is empty, will create a new scene. If id is not empty, will update a exist scene.'
+        sceneName:
+          type: string
+          description: 'Short summary of this scene, MUST in chinese, up to 5 Chinese characters'
+        triggers:
+          type: array
+          description: 'Triggers of the scene. If there are multiple triggers, each trigger can trigger scene execution.'
+          items:
+            type: object
+            description: 'Define one trigger'
+            required: [type,repeat]
+            oneOf:
+            - $ref: '#/components/schemas/VoiceCommand'
+            - $ref: '#/components/schemas/Time'
+            - $ref: '#/components/schemas/Switch'
+            - $ref: '#/components/schemas/DoorUnlock'
+            - $ref: '#/components/schemas/DoorLock'
+            - $ref: '#/components/schemas/HumanPass'
+            discriminator:
+              propertyName: type
+            properties:
+              type:
+                type: string
+              groupName:
+                type: string
+                description: The group where the device is located, such as ["客厅","卧室","主卧","书房","饭厅","厨房","厕所"]
+        actions:
+          type: array
+          description: 'When the trigger is triggered, all actions will be executed.'
+          items:
+            type: object
+            description: 'one action of a device'
+            required: [type]
+            oneOf:
+            - $ref: '#/components/schemas/alarm'
+            - $ref: '#/components/schemas/light'
+            - $ref: '#/components/schemas/curtain'
+            - $ref: '#/components/schemas/aircondition'
+            - $ref: '#/components/schemas/humidifier'
+            discriminator:
+              propertyName: type
+            properties:
+              type:
+                type: string
+                enum: [ alarm, light, curtain, aircondition, humidifier]
+paths:
+  /createOrUpdateIotScenes:
+    post:
+      operationId: createOrUpdateIotScenes
+      summary: add or update iot control scene list
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scenes:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/scene'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    description: 0 means success, others means fail
+                  id_list:
+                    type: array
+                    items:
+                      type: integer
+                    description: the scene id list, which were created or updated  by the request

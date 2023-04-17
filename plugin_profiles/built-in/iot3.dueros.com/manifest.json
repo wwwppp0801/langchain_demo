@@ -1,0 +1,19 @@
+{
+    "schema_version": "v1",
+    "name_for_human": "DuerOS Iot",
+    "name_for_model": "DuerOS Iot",
+    "description_for_human": "DuerOS Iot plugin. Can help you design an automatic control scene, for iot devices in your home.",
+    "description_for_model": "DuerOS Iot plugin. Can help you design an automatic control scene, for iot devices in your home. Iot devices include lights, air conditioners, alarm clocks, curtains, temperature sensors, humidity sensors, light sensors, etc.",
+    "auth": {
+        "type": "none"
+    },
+    "api": {
+        "type": "openapi",
+        "url": "http://127.0.0.1:8002/iot2.dueros.com.yaml",
+        "is_user_authenticated": false
+    },
+    "logo_url": "https://iot.dueros.com/ai-plugin-logo.png",
+    "contact_email": "dueros@baidu.com",
+    "legal_info_url": "https://iot.dueros.com/legal"
+}
+
