@@ -1,0 +1,278 @@
+<!--doctype html-->
+<html>
+    <head>
+        <title>langchain webui</title>
+        <meta name="referrer" content="never">
+        <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    </head>
+    <body>
+        <div class="container">
+            {% include 'nav.html' %}
+            <div class="row mt-1">
+                <form id="form" action="#">
+                    <div class="form-group col-md-10 d-flex align-items-center">
+                        <button type="submit" class="btn btn-primary">Run Test Cases</button>
+                    </div>
+                    <div class="input-group" id="checkbox_group">
+                        {% for plugin_name in plugin_names %}
+                        <div class="input-group-text">
+                            <input {% if loop.index==1%}checked{% endif %} class="form-check-input" name="plugin_name" type="radio" value="{{plugin_name}}" id="tool{{loop.index}}">
+                            <label class="form-check-label" for="tool{{loop.index}}">{{plugin_name}}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </form>
+            </div>
+            <div class="row mb-1">
+                <div class="col-md-10 d-flex align-items-center">
+                    <label class="form-check-label">参考样例: </label>
+                    <a href="download/iot_test_case.json" target="_blank" class="link">默认的test_case.json</a>&nbsp;
+                </div>
+            </div>
+
+            <div class="row mb-1">
+                <form id="upload_form" method="post" action="/upload" enctype="multipart/form-data">
+                    <label>上传test_case.json</label>
+                    <!-- 添加一个文件选择元素 -->
+                    <input type="file" name="file" id="file">
+                    <!-- 添加一个隐藏的input元素，用来存储文件名 -->
+                    <input type="hidden" name="filename" id="filename">
+                    <!-- 添加一个提交按钮 -->
+                    <input type="submit" value="Upload">
+                </form>
+                <!-- 显示上传结果 -->
+                <div id="result"></div>
+            </div>
+
+            <div class="row mb-1">
+                <div class="col-md-10 d-flex align-items-center">
+                    <label class="form-check-label">参考样例: </label>
+                    <a href="download/plugin_example.zip" target="_blank" class="link">iot plugin example</a>&nbsp;
+                </div>
+            </div>
+            
+            <div class="row mb-1">
+                <form id="upload_form1" method="post" action="/upload" enctype="multipart/form-data">
+                    <label>上传plugin.zip</label>
+                    <!-- 添加一个文件选择元素 -->
+                    <input type="file" name="file" id="file1">
+                    <!-- 添加一个隐藏的input元素，用来存储文件名 -->
+                    <input type="hidden" name="filename" id="plugin_file">
+                    <!-- 添加一个提交按钮 -->
+                    <input type="submit" value="Upload">
+                </form>
+                <!-- 显示上传结果 -->
+                <div id="result1"></div>
+            </div>
+
+            <h3>程序输出</h1>
+            <div id="output" class="well"></div>
+            <h3>openai请求日志</h1>
+            <div id="errorlog" class="well"></div>
+        </div>
+
+        <!-- Load socket.io -->
+        <!--
+            <script src="{{ url_for('static', filename='socket.io.js') }}"></script>
+            <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+        -->
+        <script src="{{ url_for('static', filename='socket.io.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='ansi_up.js') }}"></script>
+        <script src="{{ url_for('static', filename='jquery-1.7.2.min.js') }}"></script>
+
+        <!-- Custom script -->
+        <script>
+            let page_id=new Date().getTime()+Math.random();
+            $("#upload_form").submit(function(e){
+                // 阻止默认行为
+                e.preventDefault();
+                // 获取表单中的文件对象
+                var file = $("#file")[0].files[0];
+                // 检查文件是否存在并且合法
+                if (file && file.name) {
+                    // 创建一个FormData对象
+                    var formData = new FormData();
+                    // 将文件添加到FormData对象中
+                    formData.append("file", file);
+                    // 将文件名添加到FormData对象中
+                    formData.append("filename", file.name);
+                    // 使用ajax()方法发送请求到服务器端
+                    $.ajax({
+                        url: "/upload",
+                        type: "POST",
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function(data) {
+                            // 如果成功，显示返回的信息
+                            $("#result").html(data);
+                        },
+                        error: function(xhr, status, error) {
+                            // 如果失败，显示错误信息
+                            $("#result").html(error);
+                        }
+                    });
+                } else {
+                    // 如果没有选择或者无效的文件，显示错误信息
+                    $("#result").html("<p>No file selected or invalid file.</p>");
+                }
+            });
+            let filename="";
+            // 监听onchange事件
+            $("#file").change((e) => {
+                // 获取FileList对象
+                const files = e.target.files;
+                // 获取第一个文件的文件名
+                filename = files[0].name;
+                // 打印文件名
+                console.log(filename);
+            });
+
+
+
+
+            $("#upload_form1").submit(function(e){
+                // 阻止默认行为
+                e.preventDefault();
+                // 获取表单中的文件对象
+                var file = $("#file1")[0].files[0];
+                // 检查文件是否存在并且合法
+                if (file && file.name) {
+                    // 创建一个FormData对象
+                    var formData = new FormData();
+                    // 将文件添加到FormData对象中
+                    formData.append("file", file);
+                    // 将文件名添加到FormData对象中
+                    formData.append("filename", file.name);
+                    // 使用ajax()方法发送请求到服务器端
+                    $.ajax({
+                        url: "/upload",
+                        type: "POST",
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function(data) {
+                            // 如果成功，显示返回的信息
+                            $("#result1").html(data);
+                        },
+                        error: function(xhr, status, error) {
+                            // 如果失败，显示错误信息
+                            $("#result1").html(error);
+                        }
+                    });
+                } else {
+                    // 如果没有选择或者无效的文件，显示错误信息
+                    $("#result1").html("<p>No file selected or invalid file.</p>");
+                }
+            });
+            let plugin_file="";
+            // 监听onchange事件
+            $("#file1").change((e) => {
+                // 获取FileList对象
+                const files = e.target.files;
+                // 获取第一个文件的文件名
+                plugin_file = files[0].name;
+                // 打印文件名
+                console.log(plugin_file);
+            });
+            
+            function getToolValues(){
+                var tools = $("#checkbox_group input:checked");
+
+                // Create an array to store the values of the checked checkboxes
+                var toolValues = [];
+
+                // Loop through each checked checkbox and push its value to the array
+                tools.each(function() {
+                    toolValues.push($(this).val());
+                });
+
+                // Join the array elements with a comma separator
+                var toolString = toolValues.join(",");
+                return toolString
+            }
+            // Get the socket object
+            var socket = io.connect();
+
+            // Get the DOM elements
+            var form = document.getElementById('form');
+            var input = document.getElementById('input');
+            var output = document.getElementById('output');
+            var errorlog = document.getElementById('errorlog');
+
+            // Listen for form submit event
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                $("#output").html("")
+                $("#errorlog").html("")
+                // Send the command to the server
+                socket.emit('run_test_cases_iot', {plugin_name:getToolValues(),page_id:page_id,filename:filename,plugin_file:plugin_file});
+                // Clear the input field
+            });
+
+
+            function times(s,times){
+                let i=0;
+                let res="";
+                for(i=0;i<times;i++){
+                    res+=s
+                }
+                return res;
+            }
+            function replaceHeadSpace(s){
+                let match=s.match(/^ +/);
+                if(match){
+                    s=s.replace(/^ +/,times("&nbsp;",match[0].length))
+                }
+                return s;
+            }
+
+            // Listen for result event from the server
+            socket.on('result', function(data) {
+                var line = data['line'];
+                if (line) {
+                    // Convert ANSI escape codes to HTML tags using ansi_up library (https://github.com/drudru/ansi_up)
+                    var ansi_up = new AnsiUp;
+                    var html_line = ansi_up.ansi_to_html(line);
+                    // Append the result line to the output element
+                    $(output).append(replaceHeadSpace(html_line) + "<br>");
+                    
+
+
+
+                    let match=null;
+                    if(match=line.match(/{.*}/)){
+                        try{
+                            let json=JSON.parse(match[0]);
+                            if(json.images){
+                                let html=json.images.map(function(url){
+                                    return "<div style='max-width:400px' class=\"row\"><img src=\""+url+"\"/></div>"
+                                }).join("\n")
+                                $(output).append(html);
+                            }
+                            if(json.excel_filename){
+                                let html= "<div style='max-width:400px' class=\"row\"><a target='_blank' href=\"report/"+json.excel_filename+"\">"+json.excel_filename+"</a></div>";
+                                $(output).append(html);
+                            }
+                            if(json.json_filename){
+                                let html= "<div style='max-width:400px' class=\"row\"><a target='_blank' href=\"report/"+json.json_filename+"\">"+json.json_filename+"</a></div>";
+                                $(output).append(html);
+                            }
+                        }catch(e){}
+                    }
+                }
+            });
+            socket.on('errorlog', function(data) {
+                var line = data['line'];
+                if (line) {
+                    // Convert ANSI escape codes to HTML tags using ansi_up library (https://github.com/drudru/ansi_up)
+                    var ansi_up = new AnsiUp;
+                    var html_line = ansi_up.ansi_to_html(line);
+                    // Append the result line to the output element
+                    errorlog.innerHTML += html_line + '<br>';
+                }
+            });
+        </script>
+
+    </body>
+</html>

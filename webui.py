@@ -15,6 +15,15 @@ from flask_socketio import SocketIO
 #import websockets
 
 
+plugin_names=[
+        "iot3.dueros.com",
+        "iot2.dueros.com",
+        "iot.dueros.com",
+        "jd.com",
+        "www.Klarna.com",
+        ]
+
+
 app = Flask(__name__)
 app.config["CACHE_TYPE"]="null"
 app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
@@ -210,17 +219,18 @@ def run_test_cases_index():
     return render_template("run_test_cases.html",
                            nav_tabs=get_nav_tabs(request.path),)
 
+@app.route("/run_test_cases_iot")
+def run_test_cases_iot_index():
+    # render a template with a div element for displaying output and an input element and a button for submitting name parameter
+    return render_template("run_test_cases_iot.html",
+                           plugin_names=plugin_names,
+                           nav_tabs=get_nav_tabs(request.path),)
+
 @app.route("/call_plugin")
 def call_plugin_index():
     # render a template with a div element for displaying output and an input element and a button for submitting name parameter
     return render_template("call_plugin.html",
-                           plugin_names=[
-                               "iot3.dueros.com",
-                               "iot2.dueros.com",
-                               "iot.dueros.com",
-                               "jd.com",
-                               "www.Klarna.com"
-                               ],
+                           plugin_names=plugin_names,
                            nav_tabs=get_nav_tabs(request.path),
                            )
 
@@ -236,6 +246,7 @@ def get_nav_tabs(path:str):
             {"path":"/","name":"langchain","title":"langchain"},
             {"path":"/run_test_cases","name":"run_test_cases","title":"运行测试用例"},
             {"path":"/call_plugin","name":"call_plugin","title":"调用插件"},
+            {"path":"/run_test_cases_iot","name":"run_test_cases_iot","title":"运行iot plugin测试用例"},
             {"path":"/file_question","name":"file_question","title":"文件问答"},
     ]
     for nav_tab in nav_tabs:
@@ -302,6 +313,24 @@ def run_test_cases(data):
         
     print(data)
     process = subprocess.Popen([_env.python_path ,"-u","performance.py", tools,filename], stdout=subprocess.PIPE, stderr=subprocess.PIPE , bufsize=0)
+    pipe_process_to_socket_io(process,request.sid)
+
+    print("end run testcases")
+
+@socketio.on('run_test_cases_iot')
+def run_test_cases_iot(data):
+    plugin_name = data['plugin_name']
+    filename = data['filename']
+    if filename!='':
+        filename="./upload/"+filename
+    
+    plugin_file = data['plugin_file']
+    if plugin_file and plugin_file!='':
+        filename="./upload/"+plugin_file
+        profiles.unzip_file_to_proile(filename)
+        
+    print(data)
+    process = subprocess.Popen([_env.python_path ,"-u","performance_iot.py", plugin_name, filename], stdout=subprocess.PIPE, stderr=subprocess.PIPE , bufsize=0)
     pipe_process_to_socket_io(process,request.sid)
 
     print("end run testcases")
