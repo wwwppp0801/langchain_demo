@@ -11,6 +11,7 @@ import tornado.gen
 import tornado.httpclient
 import socket
 import asyncio
+import hashlib
 from urllib.parse import urlparse
 
 #logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(asctime)s %(message)s')
@@ -70,6 +71,30 @@ def fetch_request(url, **kwargs):
 def parse_proxy(proxy):
     proxy_parsed = urlparse(proxy, scheme='http')
     return proxy_parsed.hostname, proxy_parsed.port
+
+
+cache_db = {}
+def get_cache_key(request):
+    key=request.uri + request.method + str(request.body)
+    ## 计算key的sha1值
+    key = hashlib.sha1(key.encode('utf-8')).hexdigest()
+    return key
+
+def set_cache(request,response):
+    if response.code!=200 or response.headers.get('Content-Type','').find('application/json')==-1:
+        return
+    
+    entry = {}
+    entry['headers'] = dict(response.headers)
+    entry['response_body'] = response.body
+    logger.debug("set_cache %s",request.uri)
+    logger.debug(request.body)
+    
+    cache_db[get_cache_key(request)] = entry
+
+def get_cache(request):
+    return cache_db.get(get_cache_key(request),None)
+    
 
 class ProxyHandler(tornado.web.RequestHandler):
     SUPPORTED_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS','CONNECT']
@@ -197,6 +222,7 @@ class ProxyHandler(tornado.web.RequestHandler):
                         logger.info("openai messages: %s",json.dumps({"request":request_body_json,
                                                                       "response":body_json},
                                                                      ensure_ascii=False))
+                        set_cache(self.request,response)
                     except Exception as e:
                         None
             self.finish()
@@ -221,6 +247,15 @@ class ProxyHandler(tornado.web.RequestHandler):
                 parsed=urlparse(self.request.uri)
                 self.request.headers["Host"]=parsed.netloc
                 logger.debug("fetch_request %s %s %s",self.request.uri,str(self.request.headers),str(parsed))
+                cache = get_cache(self.request)
+                if cache != None:
+                    logger.debug("cache hit %s",self.request.uri)
+                    logger.debug(cache)
+                    self.set_status(200)
+                    self.set_header('Content-Type', cache["headers"].get('Content-Type',""))
+                    self.write(cache['response_body'])
+                    self.finish()
+                    return
 
             resp = await fetch_request(
                 self.request.uri,
