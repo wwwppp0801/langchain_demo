@@ -326,11 +326,11 @@ def run_test_cases_iot(data):
     
     plugin_file = data['plugin_file']
     if plugin_file and plugin_file!='':
-        filename="./upload/"+plugin_file
-        profiles.unzip_file_to_proile(filename)
+        tmp_file="./upload/"+plugin_file
+        profiles.unzip_file_to_proile(tmp_file)
         
     print(data)
-    process = subprocess.Popen([_env.python_path ,"-u","performance_iot.py", plugin_name, filename], stdout=subprocess.PIPE, stderr=subprocess.PIPE , bufsize=0)
+    process = subprocess.Popen([_env.python_path ,"-u","performance_iot.py", plugin_name, filename, plugin_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE , bufsize=0)
     pipe_process_to_socket_io(process,request.sid)
 
     print("end run testcases")

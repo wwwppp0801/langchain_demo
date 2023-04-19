@@ -24,7 +24,7 @@ def test_a_query(command:str,plugin_name="iot3.dueros.com",session_id=None,plugi
     # 创建一个队列
     q = queue.Queue()
     params=[_env.python_path ,"-u","call_plugin_chain.py",command, plugin_name,session_id,plugin_file]
-    print(params)
+    print(params,file=sys.stderr)
     process = subprocess.Popen(params, stdout=subprocess.PIPE, stderr=subprocess.PIPE , bufsize=0)
     result=[]
     errorlog=[]
@@ -161,7 +161,7 @@ if __name__=="__main__":
     with open(testcase_filename, 'r') as f:
         testcases = json.load(f)
     rows=[]
-    filename="report"+datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")+"_"+plugin_name+"_"+plugin_file+".json"
+    filename="report"+datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")+".json"
     print('{"json_filename":"'+filename+'"}')
     print('{"excel_filename":"'+filename+'.xlsx"}')
     for case in testcases:
@@ -170,7 +170,7 @@ if __name__=="__main__":
             query=case["query"]
         else:
             query=case["question"]
-        print(query)
+        print(query,file=sys.stderr)
         row={}
         result,errorlog=test_a_query(query,plugin_name=plugin_name,plugin_file=plugin_file,debug=False)
         row['query']=query
