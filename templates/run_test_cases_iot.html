@@ -26,7 +26,7 @@
             <div class="row mb-1">
                 <div class="col-md-10 d-flex align-items-center">
                     <label class="form-check-label">参考样例: </label>
-                    <a href="download/iot_test_case.json" target="_blank" class="link">默认的test_case.json</a>&nbsp;
+                    <a href="{{ url_for('static', filename='iot_test_case.json') }}" target="_blank" class="link">默认的test_case.json</a>&nbsp;
                 </div>
             </div>
 
@@ -47,7 +47,7 @@
             <div class="row mb-1">
                 <div class="col-md-10 d-flex align-items-center">
                     <label class="form-check-label">参考样例: </label>
-                    <a href="download/plugin_example_iot3.zip" target="_blank" class="link">iot plugin example</a>&nbsp;
+                    <a href="{{ url_for('static', filename='plugin_example_iot3.zip') }}" target="_blank" class="link">iot plugin example</a>&nbsp;
                 </div>
             </div>
             
