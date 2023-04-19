@@ -120,7 +120,7 @@ def pipe_process_to_socket_io(process,sid):
     t3.start()
 
     # 定义一个超时时间（秒）
-    timeout = 180
+    timeout = 3600
 
     # 记录开始时间
     start_time = time.time()
