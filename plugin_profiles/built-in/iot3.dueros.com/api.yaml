@@ -115,6 +115,10 @@ components:
           maximum: 35
           description: >
             Celsius temperature.
+        direction:
+          type: string
+          description: The direction of air conditioning blowing air
+          enum: [up_and_down, up, down]
     humidifier:
       type: object
       description: Can adjust the humidity of the room
@@ -129,11 +133,33 @@ components:
           maximum: 100
           description: >
             Percentage of humidity level.
+    sweepingRobot:
+      type: object
+      description: A sweeping robot is a device that uses a microcomputer to control, automatically navigate and clean and vacuum the floor. It can use sensors to detect and avoid obstacles, clean dust in corners and along walls, and also automatically recharge and resume cleaning. 
+      properties:
+        operation:
+          type: string
+          description: start sweep or stop sweep.
+          enum: [ start, stop ]
+        location:
+          type: string
+          description: Location to be cleaned
+    tv:
+      type: object
+      description: a tv can play multiple channels, specific videos
+      properties:
+        channel:
+          type: string
+        videoName:
+          type: string
+        volume:
+          type: integer
+          minimum: 0
+          maximum: 100
     groupName:
       type: string
       enum: ["全部","客厅","次卧","客房","卧室","主卧","书房","饭厅","厨房","厕所"]
       description: The group where the device is located
-
     scene:
       type: object
       required: [sceneName,triggers,actions]
