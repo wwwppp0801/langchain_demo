@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: DuerOS Iot
-  description: DuerOS Iot plugin. Can help you develop an automatic control scene, with iot devices in your home. Iot devices include lights, air conditioners, smart speakers, temperature sensor, humidity sensor, light sensor, curtain
+  description: DuerOS Iot plugin. Can help you develop an automatic control scene, with iot devices in your home. Iot devices include lights, air conditioners, smart speakers, temperature sensor, humidity sensor, light sensor, Switch, curtain, DoorLock, HumanSensor, TemperatureHumiditySensor
   version: 'v1'
 servers:
   - url: http://127.0.0.1:8002/
@@ -45,18 +45,67 @@ components:
       type: object
       description: >
         Triggered when the switch device is pressed
-    DoorUnlock:
-      type: object
-      description: >
-        Triggered when the smart door lock is opened
+
     DoorLock:
       type: object
-      description: >
-        Triggered when the smart door lock is closed
-    HumanPass:
+      description: Triggered when the doorLock is locked or unlocked, or triggered when a door magne sensor on a door detect the door is locked or unlocked. doorLock has diffent way to open, such as open by NFC, password, or fingprint. A door magne sensor can just detect the door is locked or unlocked, don't have diffent way to open the door.
+      properties:
+        state:
+          type: string
+          enum: [lock, unlock]
+          description: lock - when the doorLock is locked, or door magne sensor detect the door is open; unlock - when the doorLock is unlock, or door magne sensor detect the door is closed.
+        openBy:
+          type: string
+          enum: [NFC, password, fingerprint]
+          description: >
+            the way how the door is opened from outside. if we don't know how the doorLock is opend, this field can be remove or be none.
+            NFC - the doorLock is opened by NFC card
+            password - the doorLock is opened by number password
+            fingerprint - the doorLock is opened by fingerprint.
+    HumanSensor:
       type: object
       description: >
-        Triggered when the body sensor sense a person
+        Triggered when the human sensor sense a person pass or no body in the zone
+      properties:
+        event:
+          type: string
+          enum: [humanPass, nobody]
+          description: humanPass - HumanSensor detect somebody on passed; noBody - HumanSensor detect there is no human in the zone.
+        nobodyDurationTime:
+          type: string
+          enum: [oneMinute, threeMinute, fiveMinute, tenMinute]
+          description: >
+            how long HumanSensor detect the zone has nobody come in continued, where event value is Nobody, this field should have value, otherwise, this field should be empty
+            oneMinute - HumanSensor detect the zone has nobody come in continued one minute
+            threeMinute - HumanSensor detect the zone has nobody come in continued three minutes
+            fiveMinute - HumanSensor detect the zone has nobody come in continued five minutes
+            tenMinute - HumanSensor detect the zone has nobody come in continued ten minutes
+    TemperatureHumiditySensor:
+      type: object
+      description: >
+        Triggered when the TemperatureHumiditySensor sense temperature or humidity to a setting value. for example,the temperature up to 25 celsius degree, the humidity down to 30 percent.
+      properties:
+        temperatureChange:
+          type: string
+          enum: [upto, downto]
+          description: upto - temperature up to a value becauseof environment change; upto - temperature down to a value becauseof environment change.
+        temperature:
+          type: integer
+          minimum: 16
+          maximum: 35
+          description: >
+            Celsius temperature.
+        humidityChange:
+          type: string
+          enum: [upto, downto]
+          description: upto - humidity up to a value becauseof environment change; upto - humidity down to a value becauseof environment change.
+        humidity:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: >
+            Percentage of humidity level.
+        
     alarm:
       type: object
       description: Set an alarm clock. Can play a voice alarm, or music when time is up.
@@ -64,17 +113,13 @@ components:
         tts:
           type: string
           description: 'Text to generate voice alarm.'
-        music:
-          type: string
-          description: music name or type to play
     light:
       type: object
       description: Can be opened or closed. Have ability to adjust color temperature and brightness.
       properties:
-        onOffState:
+        state:
           type: string
           enum: [on, off]
-          description: on - open; off - close a device
         colorTemperature:
           type: integer
           minimum: 0
@@ -98,10 +143,9 @@ components:
       type: object
       description: Cooling and heating air conditioners
       properties:
-        onOffState:
+        state:
           type: string
           enum: [on, off]
-          description: on - open; off - close a device
         mode:
           type: string
           enum: [ cooling ,heating, stableTemperature ]
@@ -123,46 +167,68 @@ components:
       type: object
       description: Can adjust the humidity of the room
       properties:
-        onOffState:
+        state:
           type: string
-          enum: [on, off]
-          description: on - open; off - close a device
+          enum: [on, off, stableHumidity]
+          description: on - open; off - close a device; stableHumidity - a humidifier keep a humidity value.
         humidity:
           type: integer
           minimum: 0
           maximum: 100
           description: >
             Percentage of humidity level.
-    sweepingRobot:
-      type: object
-      description: A sweeping robot is a device that uses a microcomputer to control, automatically navigate and clean and vacuum the floor. It can use sensors to detect and avoid obstacles, clean dust in corners and along walls, and also automatically recharge and resume cleaning. 
-      properties:
-        operation:
-          type: string
-          description: start sweep or stop sweep.
-          enum: [ start, stop ]
-        location:
-          type: string
-          description: Location to be cleaned
     tv:
       type: object
-      description: a tv can play multiple channels, specific videos
+      description: a tv just can turn on, turn off, adjust volume. a tv don't have other funtions, such as can't play music.
       properties:
-        channel:
+        state:
           type: string
-        videoName:
-          type: string
+          enum: [on, off]
         volume:
           type: integer
           minimum: 0
           maximum: 100
+    delayExecute:
+      type: object
+      description: a action should be  executed delay according to this field describle.
+      properties:
+        delayTime:
+          type: integer
+          description: >
+            the seconds the action delay, this field should be in right sequence in actions array
+    validTime:
+      type: object
+      description: valid triggered time sapn, the scene should only triggered in setting validTime
+      properties:
+        begin:
+          type: string
+          description: >
+            the time begins of one way, such as "07:00", means begin at 7 clock in the morning. if time is earlier then begin time, the scene is not triggered.
+        end:
+          type: string
+          description: >
+            the time begins of one way, such as "20:00", means ends at 8 clock in the evening.if time is later then end time, the scene is not triggered.
+    speaker:
+      type: object
+      description: the speaker play audio generated by text, it can also play music
+      properties:
+        content:
+          type: string
+          enum: [text, music]
+          description: >  
+            text - the speaker convert text to audio
+            music - the speaker play music
+        text:
+          type: string
+          description: when content field value is "text", this field should have value. the value is what to play as a voice.
+
     groupName:
       type: string
-      enum: ["全部","客厅","次卧","客房","卧室","主卧","书房","饭厅","厨房","厕所"]
-      description: The group where the device is located
+      enum: ["全部","客厅","卧室","主卧","房间","全屋","次卧","厨房","餐厅","阳台","卫生间","书房","儿童房","默认房间","洗手间","门口","客房","玄关","其他","办公室","一楼","走廊","工作间","过道","二楼","浴室","老人房","场景","衣帽间","默认楼层","吧台","影音室","茶室","三楼","楼下","楼梯","花园","楼上","娱乐室","车库","主卫","智慧客房","起居室","休息室","宿舍","杂物间","婴儿房","四楼","大厅","默认","北次卧","客卧","多功能室","主卧室","女儿房","其它","家","中厅","我的房间","其他位置","门厅","公卫","南次卧","洗衣房","客卫","设备间","宠物房","全屋"]
+      description: The group where the device is located. If can not find location before a device name, the value of this field should be "全屋".
     scene:
       type: object
-      required: [sceneName,triggers,actions]
+      required: [sceneName, triggers, actions]
       properties:
         id:
           type: string
@@ -176,14 +242,14 @@ components:
           items:
             type: object
             description: 'Define one trigger'
-            required: [type,repeat]
+            required: [type, repeat]
             oneOf:
             - $ref: '#/components/schemas/VoiceCommand'
             - $ref: '#/components/schemas/Time'
             - $ref: '#/components/schemas/Switch'
-            - $ref: '#/components/schemas/DoorUnlock'
             - $ref: '#/components/schemas/DoorLock'
-            - $ref: '#/components/schemas/HumanPass'
+            - $ref: '#/components/schemas/HumanSensor'
+            - $ref: '#/components/schemas/TemperatureHumiditySensor'
             discriminator:
               propertyName: type
             properties:
@@ -197,19 +263,23 @@ components:
           items:
             type: object
             description: 'one action of a device'
-            required: [type,name]
+            required: [type, name, groupName]
             oneOf:
             - $ref: '#/components/schemas/alarm'
             - $ref: '#/components/schemas/light'
             - $ref: '#/components/schemas/curtain'
             - $ref: '#/components/schemas/aircondition'
             - $ref: '#/components/schemas/humidifier'
+            - $ref: '#/components/schemas/tv'
+            - $ref: '#/components/schemas/delayExecute'
+            - $ref: '#/components/schemas/validTime'
+            - $ref: '#/components/schemas/speaker'
             discriminator:
               propertyName: type
             properties:
               type:
                 type: string
-                enum: [ alarm, light, curtain, aircondition, humidifier]
+                enum: [ alarm, light, curtain, aircondition, humidifier, delayExecute, validTime, speaker]
               groupName:
                 $ref: '#/components/schemas/groupName'
               name:
