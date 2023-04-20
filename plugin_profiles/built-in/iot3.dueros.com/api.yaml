@@ -172,7 +172,7 @@ components:
           maximum: 100
     delay:
       type: object
-      description: "delay" will wait some time before next action.
+      description: "\"delay\" will wait some time before next action."
       properties:
         timeInSeconds:
           type: integer
