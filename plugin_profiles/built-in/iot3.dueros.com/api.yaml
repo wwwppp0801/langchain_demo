@@ -36,32 +36,22 @@ components:
             workday - any day that you work.
             restday - any day that you rest.
             everyday - everyday.
-            spring - one of the four temperate seasons. lasting from March to May north of the equator, and from September to November south of the equator.
-            summer - one of the four temperate seasons. lasting from June to Augest north of the equator, and from December to February south of the equator.
-            fall - one of the four temperate seasons. lasting from September to November north of the equator, and from March to May south of the equator.
-            winter - one of the four temperate seasons. lasting from December to February north of the equator, and from June to Augest south of the equator.
             none - no repeat.
     Switch:
       type: object
       description: >
         Triggered when the switch device is pressed
-
     DoorLock:
       type: object
-      description: Triggered when the doorLock is locked or unlocked, or triggered when a door magne sensor on a door detect the door is locked or unlocked. doorLock has diffent way to open, such as open by NFC, password, or fingprint. A door magne sensor can just detect the door is locked or unlocked, don't have diffent way to open the door.
+      description: Triggered when the doorLock is locked or unlocked.
       properties:
-        state:
+        event:
           type: string
-          enum: [lock, unlock]
-          description: lock - when the doorLock is locked, or door magne sensor detect the door is open; unlock - when the doorLock is unlock, or door magne sensor detect the door is closed.
-        openBy:
+          enum: [ "locked", "unlocked" ]
+        openfrom:
           type: string
-          enum: [NFC, password, fingerprint]
-          description: >
-            the way how the door is opened from outside. if we don't know how the doorLock is opend, this field can be remove or be none.
-            NFC - the doorLock is opened by NFC card
-            password - the doorLock is opened by number password
-            fingerprint - the doorLock is opened by fingerprint.
+          enum: [ "inside", "outside" ]
+          description: When coming home, the door is opened from the outside. When going out, the door is opened from the inside
     HumanSensor:
       type: object
       description: >
@@ -69,43 +59,35 @@ components:
       properties:
         event:
           type: string
-          enum: [humanPass, nobody]
+          enum: ["humanPass", "nobody"]
           description: humanPass - HumanSensor detect somebody on passed; noBody - HumanSensor detect there is no human in the zone.
         nobodyDurationTime:
           type: string
-          enum: [oneMinute, threeMinute, fiveMinute, tenMinute]
+          enum: ["1", "3", "5", "10"]
           description: >
-            how long HumanSensor detect the zone has nobody come in continued, where event value is Nobody, this field should have value, otherwise, this field should be empty
-            oneMinute - HumanSensor detect the zone has nobody come in continued one minute
-            threeMinute - HumanSensor detect the zone has nobody come in continued three minutes
-            fiveMinute - HumanSensor detect the zone has nobody come in continued five minutes
-            tenMinute - HumanSensor detect the zone has nobody come in continued ten minutes
+            Length of time in minutes that the body sensor continues to detect the absence of any person. Only valid when event=="nobody".
     TemperatureHumiditySensor:
       type: object
       description: >
-        Triggered when the TemperatureHumiditySensor sense temperature or humidity to a setting value. for example,the temperature up to 25 celsius degree, the humidity down to 30 percent.
+        Triggered when the temperature and humidity reach specified values. It can also detect direction in temperature and humidity changes, rising or falling
       properties:
-        temperatureChange:
+        temperatureDirection:
           type: string
-          enum: [upto, downto]
-          description: upto - temperature up to a value becauseof environment change; upto - temperature down to a value becauseof environment change.
+          enum: ["rising", "falling"]
         temperature:
           type: integer
           minimum: 16
           maximum: 35
           description: >
             Celsius temperature.
-        humidityChange:
+        humidityDirection:
           type: string
-          enum: [upto, downto]
-          description: upto - humidity up to a value becauseof environment change; upto - humidity down to a value becauseof environment change.
+          enum: ["rising", "falling"]
         humidity:
           type: integer
           minimum: 0
           maximum: 100
-          description: >
-            Percentage of humidity level.
-        
+          description: Percentage of humidity level.
     alarm:
       type: object
       description: Set an alarm clock. Can play a voice alarm, or music when time is up.
@@ -119,7 +101,7 @@ components:
       properties:
         state:
           type: string
-          enum: [on, off]
+          enum: ["on", "off"]
         colorTemperature:
           type: integer
           minimum: 0
@@ -145,10 +127,10 @@ components:
       properties:
         state:
           type: string
-          enum: [on, off]
+          enum: ["on", "off"]
         mode:
           type: string
-          enum: [ cooling ,heating, stableTemperature ]
+          enum: [ "cooling" ,"heating", "stableTemperature" ]
           description: >
             cooling - Cooling mode
             heating - Heating mode
@@ -162,14 +144,14 @@ components:
         direction:
           type: string
           description: The direction of air conditioning blowing air
-          enum: [up_and_down, up, down]
+          enum: ["up_and_down", "up", "down"]
     humidifier:
       type: object
       description: Can adjust the humidity of the room
       properties:
         state:
           type: string
-          enum: [on, off, stableHumidity]
+          enum: ["on", "off", "stableHumidity"]
           description: on - open; off - close a device; stableHumidity - a humidifier keep a humidity value.
         humidity:
           type: integer
@@ -179,42 +161,28 @@ components:
             Percentage of humidity level.
     tv:
       type: object
-      description: a tv just can turn on, turn off, adjust volume. a tv don't have other funtions, such as can't play music.
+      description: Can only control the TV's on/off and volume, not other actions of the TV, such as can't play music.
       properties:
         state:
           type: string
-          enum: [on, off]
+          enum: [ "on", "off" ]
         volume:
           type: integer
           minimum: 0
           maximum: 100
-    delayExecute:
+    delay:
       type: object
-      description: a action should be  executed delay according to this field describle.
+      description: "delay" will wait some time before next action.
       properties:
-        delayTime:
+        timeInSeconds:
           type: integer
-          description: >
-            the seconds the action delay, this field should be in right sequence in actions array
-    validTime:
-      type: object
-      description: valid triggered time sapn, the scene should only triggered in setting validTime
-      properties:
-        begin:
-          type: string
-          description: >
-            the time begins of one way, such as "07:00", means begin at 7 clock in the morning. if time is earlier then begin time, the scene is not triggered.
-        end:
-          type: string
-          description: >
-            the time begins of one way, such as "20:00", means ends at 8 clock in the evening.if time is later then end time, the scene is not triggered.
     speaker:
       type: object
       description: the speaker play audio generated by text, it can also play music
       properties:
         content:
           type: string
-          enum: [text, music]
+          enum: ["text", "music"]
           description: >  
             text - the speaker convert text to audio
             music - the speaker play music
@@ -259,10 +227,9 @@ components:
                 $ref: '#/components/schemas/groupName'
         actions:
           type: array
-          description: 'When the trigger is triggered, all actions will be executed.'
+          description: 'When the trigger is triggered, all actions will be executed serially.'
           items:
             type: object
-            description: 'one action of a device'
             required: [type, name, groupName]
             oneOf:
             - $ref: '#/components/schemas/alarm'
@@ -271,15 +238,14 @@ components:
             - $ref: '#/components/schemas/aircondition'
             - $ref: '#/components/schemas/humidifier'
             - $ref: '#/components/schemas/tv'
-            - $ref: '#/components/schemas/delayExecute'
-            - $ref: '#/components/schemas/validTime'
+            - $ref: '#/components/schemas/delay'
             - $ref: '#/components/schemas/speaker'
             discriminator:
               propertyName: type
             properties:
               type:
                 type: string
-                enum: [ alarm, light, curtain, aircondition, humidifier, delayExecute, validTime, speaker]
+                enum: [ "alarm", "light", "curtain", "aircondition", "humidifier", "delayExecute", "validTime", "speaker"]
               groupName:
                 $ref: '#/components/schemas/groupName'
               name:
