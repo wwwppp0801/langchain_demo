@@ -170,10 +170,14 @@ if __name__=="__main__":
             query=case["query"]
         else:
             query=case["question"]
+
+        if "type" not in case:
+            case["type"]="none"
         print(query,file=sys.stderr)
         row={}
         result,errorlog=test_a_query(query,plugin_name=plugin_name,plugin_file=plugin_file,debug=False)
         row['query']=query
+        row['type']=case["type"]
         row['raw_result']=result
         if result=="timeout error":
             row['raw_result']=errorlog
