@@ -78,16 +78,16 @@ components:
           type: integer
           minimum: 16
           maximum: 35
-          description: >
-            Celsius temperature.
+          description: Temperature in celsius .
         humidityDirection:
           type: string
           enum: ["rising", "falling"]
+          description: rising to the humidity, or falling to the humidity
         humidity:
           type: integer
           minimum: 0
           maximum: 100
-          description: Percentage of humidity level.
+          description: Humidity in percentage
     alarm:
       type: object
       description: Set an alarm clock. Can play a voice alarm, or music when time is up.
