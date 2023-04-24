@@ -79,6 +79,8 @@ def get_tools_from_api_doc(api_doc:Dict)->List[BaseTool]:
                 name=name,
                 func=generateToolRunFunc(url=url,method=method,api_doc=one_api),
                 description=description,
+                #调用到tool的时候，不需要再次调用llm
+                return_direct=True,
             )
             list.append(tool)
     return list
@@ -314,6 +316,7 @@ class CallPluginAgentExecutor(AgentExecutor):
 
         Override this to take control of how the agent makes and acts on choices.
         """
+        #print("_take_next_step input ",inputs)
         # Call the LLM to see what to do.
         output = self.agent.plan(intermediate_steps, **inputs)
         # If the tool chosen is the finishing tool, then we end and return.
@@ -352,10 +355,13 @@ class CallPluginAgentExecutor(AgentExecutor):
 #                llm_prefix="",
 #                observation_prefix=self.agent.observation_prefix,
 #            )
-#            return_direct = False
-#        if return_direct:
-#            # Set the log to "" because we do not want to log it.
+            observation = f'"{output.tool}" 不是一个有效的api，应该直接用createOrUpdateIotScenes设置场景'
+            return_direct = False
+        if return_direct:
+            # Set the log to "" because we do not want to log it.
             return AgentFinish({self.agent.return_values[0]: "任务已完成"}, "")
+        print(output,file=sys.stderr)
+        print(observation,file=sys.stderr)
         return output, observation
     @classmethod
     def from_agent_and_plugin_name(

@@ -118,7 +118,7 @@ if __name__ == '__main__':
         plugin_profile=plugin_profile,
         verbose=True,
     )
-    executer.max_iterations=1
+    executer.max_iterations=2
     
     executer.run(command)
 
