@@ -207,7 +207,7 @@ class CallPluginAgent(ZeroShotAgent):
                 "Final_Answer": "Final Answer",
             }
             plugin_profile['prompt']['user_prompt']="""{{Question}}: {input}
-{{Thought}}:{agent_scratchpad}"""
+{{Thought}}:{{FirstThought|default("")}}{agent_scratchpad}"""
             plugin_profile['prompt']['system_prompts']=[
                     """context:
 {"iotDeviceList":{{my_devices}}}
