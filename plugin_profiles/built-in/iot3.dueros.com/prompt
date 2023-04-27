@@ -14,7 +14,7 @@ key_terms={
     "Observation":"Api Response",
     "Question": "Task",
     "Final_Answer": "Final Summary",
-    "FirstThought":"我们可以使用createOrUpdateIotScenes来创建一个场景。",
+    "FirstThought":"",
 }
 
 system_prompts=[
@@ -26,7 +26,7 @@ system_prompts=[
 Here is what you can do: {{manifest_doc["description_for_model"]|tojson}}
 Your api document, in openapi format: {{api_doc|tojson}}
 
-Do the following task as best as you can. You have access to your apis. Don't make up api that doesn't exist in the documentation. If the task is completely irrelevant to your abilities, please just tell me "{{Final_Answer}}: 对不起，我没有这个功能".
+Do the following task as best as you can. You have access to your apis. Don't make up api that doesn't exist in the documentation. If the task is completely irrelevant to your abilities, please just tell me "{{Final_Answer}}: 这个不用创建场景，直接对着小度音箱说，小度现在就能帮你搞定。".
 
 MUST Use the following format:
 
@@ -47,7 +47,7 @@ MUST Use the following format:
 
  ]
 
-user_prompt="""{{Question}}: 根据以下用户输入，创建一个iot控制场景："{input}"
+user_prompt="""{{Question}}: 根据用户输入，看是否需要使用createOrUpdateIotScenes创建一个iot控制场景。如果不适合创建场景，回复：{{Final_Answer}}: 这个不用创建场景，直接对着小度音箱说，小度现在就能帮你搞定。用户输入为："{input}"
 {{Thought}}:{{FirstThought|default("")}}{agent_scratchpad}"""
 
 if __name__=="__main__":

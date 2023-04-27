@@ -192,7 +192,7 @@ components:
 
     groupName:
       type: string
-      enum: ["全部","客厅","卧室","主卧","房间","全屋","次卧","厨房","餐厅","阳台","卫生间","书房","儿童房","默认房间","洗手间","门口","客房","玄关","其他","办公室","一楼","走廊","工作间","过道","二楼","浴室","老人房","场景","衣帽间","默认楼层","吧台","影音室","茶室","三楼","楼下","楼梯","花园","楼上","娱乐室","车库","主卫","智慧客房","起居室","休息室","宿舍","杂物间","婴儿房","四楼","大厅","默认","北次卧","客卧","多功能室","主卧室","女儿房","其它","家","中厅","我的房间","其他位置","门厅","公卫","南次卧","洗衣房","客卫","设备间","宠物房","全屋"]
+      enum: ["全屋","全部","客厅","卧室","主卧","房间","全屋","次卧","厨房","餐厅","阳台","卫生间","书房","儿童房","默认房间","洗手间","门口","客房","玄关","其他","办公室","一楼","走廊","工作间","过道","二楼","浴室","老人房","场景","衣帽间","默认楼层","吧台","影音室","茶室","三楼","楼下","楼梯","花园","楼上","娱乐室","车库","主卫","智慧客房","起居室","休息室","宿舍","杂物间","婴儿房","四楼","大厅","默认","北次卧","客卧","多功能室","主卧室","女儿房","其它","家","中厅","我的房间","其他位置","门厅","公卫","南次卧","洗衣房","客卫","设备间","宠物房"]
       description: The group where the device is located. If can not find location before a device name, the value of this field should be "全屋".
     scene:
       type: object
@@ -250,7 +250,8 @@ components:
                 $ref: '#/components/schemas/groupName'
               name:
                 type: string
-                description: User-specified iot device name
+                description: User-specified iot device name. If this field value can be found in type, then just give type in chinese. if there is a grouping name, that is, a location name, in front of the device name, the value of name should not contain groupName.
+
 paths:
   /createOrUpdateIotScenes:
     post:
