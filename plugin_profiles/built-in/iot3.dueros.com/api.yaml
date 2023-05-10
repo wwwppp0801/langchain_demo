@@ -203,7 +203,8 @@ components:
           description: 'The identifier of a scene, which is created by server. If id is empty, will create a new scene. If id is not empty, will update a exist scene.'
         sceneName:
           type: string
-          description: 'Short summary of this scene, MUST in chinese, up to 5 Chinese characters'
+          maxLength: 7
+          description: 'Short summary of this scene, MUST in chinese, up to 7 Chinese characters'
         triggers:
           type: array
           description: 'Triggers of the scene. If there are multiple triggers, each trigger can trigger scene execution.'

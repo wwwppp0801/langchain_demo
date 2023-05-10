@@ -116,7 +116,7 @@ class CallPluginAgent(ZeroShotAgent):
             FINAL_ANSWER_ACTION = f'{key_terms["Final_Answer"]}:'
             if FINAL_ANSWER_ACTION in llm_output:
                 return key_terms["Final_Answer"], llm_output.split(FINAL_ANSWER_ACTION)[-1].strip()
-            regex = re.compile(f'{key_terms["Action"]}:(.*?)\n{key_terms["Action_Input"]}:(.*)',re.DOTALL)
+            regex = re.compile(f'{key_terms["Action"]}:(.*?)\n{key_terms["Action_Input"]}:(.*?)\n{key_terms["Action_Input_Summary"]}:(.*)',re.DOTALL)
             match = re.search(regex, llm_output)
             if not match:
                 #return "Final Answer","<not for sure>" + llm_output
@@ -134,6 +134,7 @@ class CallPluginAgent(ZeroShotAgent):
             action = match.group(1).strip()
             action = extract_real_action(action)
             action_input = match.group(2).strip("\n \"\t`")
+            action_input_summary = match.group(3).strip()
             if action_input.startswith("json"):
                 action_input=action_input[4:]
             ## 压缩json里的空格
@@ -141,7 +142,7 @@ class CallPluginAgent(ZeroShotAgent):
                 action_input=json.dumps(json.loads(action_input),ensure_ascii=False)
             except Exception as e:
                 pass
-            return action, action_input , f'{before_action}{key_terms["Action"]}: {action}\n{key_terms["Action_Input"]}: \n```\n{action_input}\n```\n'
+            return action, action_input , f'{before_action}{key_terms["Action"]}: {action}\n{key_terms["Action_Input"]}: \n```\n{action_input}\n```\n{key_terms["Action_Input_Summary"]}:{action_input_summary}\n'
         return get_action_and_input(text)
     
     def _get_next_action(self, full_inputs: Dict[str, str]) -> AgentAction:
